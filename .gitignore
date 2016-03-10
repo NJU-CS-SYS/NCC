@@ -11,9 +11,12 @@
 *.png
 *.svg
 *.s
+*.ss
 *.S
+*.SS
 *.py
 *.d
+cmm
 test.cmm
 tags
 parser

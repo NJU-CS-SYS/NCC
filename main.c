@@ -20,7 +20,9 @@ extern bool semantic_error;
 
 int main(int argc, char *argv[])
 {
-    if (argc <= 1) {
+    /* Need arguments. */
+    if (argc <= 2) {
+        printf("Usage: %s infile outfile\n", argv[0]);
         return 1;
     }
 
@@ -38,20 +40,25 @@ int main(int argc, char *argv[])
         return 1;
     }
 
+    /* Initialize strtab: a tab storaging all the strings */
     init_strtab();
 
+    /* Lexical analysis */
     yyrestart(file);
-
     yyparse();
 
+    /* Syntax analysis */
     if (!is_syn_error) {
+        /* Semantic analysis */
         semantic_analysis();
 
         if (!semantic_error) {
+            /* Generate asm codes */
             translate();
         }
     }
-
+    
+    /* Release the parsing tree. */
     free_ast();
     return 0;
 }

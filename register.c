@@ -181,11 +181,11 @@ int ensure(Operand ope)
     int result = allocate(ope);  // The reg name string to be printed.
 
     if (is_const(ope)) {
-        emit_asm(li, "%s, %d", reg_s[result], ope->integer); // Jump '#' required by ir
+        emit_asm(movl, "$%d, %s", ope->integer, reg_s[result]); // Jump '#' required by ir
     }
     else {
-        emit_asm(lw, "%s, %d($sp)  # sp_offset %d addr %d",
-                reg_s[result], sp_offset - ope->address, sp_offset, ope->address);
+        emit_asm(movl, "%d(%%esp), %s  # sp_offset %d addr %d",
+                sp_offset - ope->address, reg_s[result], sp_offset, ope->address);
     }
 
     return result;

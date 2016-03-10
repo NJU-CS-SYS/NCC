@@ -1,6 +1,8 @@
 #ifndef LIB_H
 #define LIB_H
 
+#define DEBUG
+
 enum ProductionTag {
     UNSIMPLIFIED,
     PROG_is_EXTDEF,

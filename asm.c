@@ -40,10 +40,10 @@ void gen_asm_func(IR *ir)
 
     int ra = curr_func->has_subroutine ? 4 : 0;
 
-    emit_asm(addi, "$sp, $sp, %d  # only for variables, not records", -ir->rs->size - ra);
+    emit_asm(addl, "$%d, %%esp  # only for variables, not records", -ir->rs->size - ra);
 
     if (curr_func->has_subroutine) {
-        emit_asm(sw, "$ra, %d($sp)  # Save return address", sp_offset);
+        emit_asm(movl, "%%eax, %d(%%esp)  # Save return address", sp_offset);
     }
 }
 
@@ -53,7 +53,7 @@ void gen_asm_assign(IR *ir)
     int src = ensure(ir->rs);
     int dst = allocate(ir->rd);
     set_dirty(dst);
-    emit_asm(move, "%s, %s", reg_to_s(dst), reg_to_s(src));
+    emit_asm(movl, "%s, %s", reg_to_s(src), reg_to_s(dst));
 }
 
 
@@ -63,7 +63,8 @@ void gen_asm_addi(Operand dst, Operand src, int imm)
     int first = ensure(src);
     int dest = allocate(dst);
     set_dirty(dest);
-    emit_asm(addi, "%s, %s, %d", reg_to_s(dest), reg_to_s(first), imm);
+    emit_asm(movl, "%s, %s", reg_to_s(first), reg_to_s(dest));
+    emit_asm(addl, "$%d, %s", imm, reg_to_s(dest));
 }
 
 
@@ -80,7 +81,8 @@ void gen_asm_add(IR *ir)
         int second = ensure(ir->rt);
         int dst = allocate(ir->rd);
         set_dirty(dst);
-        emit_asm(add, "%s, %s, %s", reg_to_s(dst), reg_to_s(first), reg_to_s(second));
+        emit_asm(movl, "%s, %s", reg_to_s(first), reg_to_s(dst));
+        emit_asm(addl, "%s, %s", reg_to_s(second), reg_to_s(dst));
     }
 }
 
@@ -97,7 +99,8 @@ void gen_asm_sub(IR *ir)
         int second = ensure(ir->rt);
         int dst = allocate(ir->rd);
         set_dirty(dst);
-        emit_asm(sub, "%s, %s, %s", reg_to_s(dst), reg_to_s(first), reg_to_s(second));
+        emit_asm(movl, "%s, %s", reg_to_s(first), reg_to_s(dst));
+        emit_asm(subl, "%s, %s", reg_to_s(second), reg_to_s(dst));
     }
 }
 
@@ -108,7 +111,11 @@ void gen_asm_mul(IR *ir)
     int z = ensure(ir->rt);
     int x = allocate(ir->rd);
     set_dirty(x);
-    emit_asm(mul, "%s, %s, %s", reg_to_s(x), reg_to_s(y), reg_to_s(z));
+    emit_asm(pushl, "%%eax");
+    emit_asm(movl, "%s, %%eax", reg_to_s(y));
+    emit_asm(mull, "%s, %%eax", reg_to_s(z));
+    emit_asm(movl, "%%eax, %s", reg_to_s(x));
+    emit_asm(popl, "%%eax");
 }
 
 
@@ -119,7 +126,7 @@ void gen_asm_div(IR *ir)
     int x = allocate(ir->rd);
     set_dirty(x);
     emit_asm(div, "%s, %s", reg_to_s(y), reg_to_s(z));
-    emit_asm(mflo, "%s", reg_to_s(x));
+    emit_asm(mflo, "%s", reg_to_s(x)); // ?????
 }
 
 
@@ -128,7 +135,7 @@ void gen_asm_load(IR *ir)
     int y = ensure(ir->rs);
     int x = allocate(ir->rd);
     set_dirty(x);
-    emit_asm(lw, "%s, 0(%s)", reg_to_s(x), reg_to_s(y));
+    emit_asm(movl, "0(%s), %s", reg_to_s(y), reg_to_s(x));
 }
 
 
@@ -136,13 +143,13 @@ void gen_asm_store(IR *ir)
 {
     int y = ensure(ir->rt);
     int x = ensure(ir->rs);
-    emit_asm(sw, "%s, 0(%s)", reg_to_s(y), reg_to_s(x));
+    emit_asm(movl, "%s, 0(%s)", reg_to_s(y), reg_to_s(x));
 }
 
 
 void gen_asm_goto(IR *ir)
 {
-    emit_asm(j, "%s", print_operand(ir->rs));
+    emit_asm(jmp, "%s", print_operand(ir->rs));
 }
 
 
@@ -157,7 +164,7 @@ void gen_asm_call(IR *ir)
     // Open space for used save registers and arguments
 
     int offset = nr_arg * 4;
-    emit_asm(addi, "$sp, $sp, -%d  # Open space for save and arguments", offset);
+    emit_asm(addl, "-%d, %%esp  # Open space for save and arguments", offset);
 
     sp_offset += offset;
 
@@ -176,11 +183,11 @@ void gen_asm_call(IR *ir)
                                                     // ARG IRs that match [nr_arg]
 
         int y = ensure(arg->rs);
-        emit_asm(sw, "%s, %d($sp)", reg_to_s(y), (i - 1) * 4);
+        emit_asm(movl, "%s, %d(%%esp)", reg_to_s(y), (i - 1) * 4);
 
     }
 
-    emit_asm(jal, "%s", ir->rs->name);
+    emit_asm(call, "%s", ir->rs->name); // ?????
 
     clear_reg_state();
 
@@ -188,10 +195,10 @@ void gen_asm_call(IR *ir)
     set_dirty(x);
 
     if (ir->rd->next_use != MAX_LINE || ir->rd->liveness) {
-        emit_asm(move, "%s, $v0", reg_to_s(x));
+        emit_asm(movl, "%s, %%eax", reg_to_s(x));
     }
 
-    emit_asm(addiu, "$sp, $sp, %d  # Drawback save and arguments space", offset);
+    emit_asm(addl, "%d, %%eax  # Drawback save and arguments space", offset);
 
     sp_offset -= offset;
 
@@ -216,15 +223,15 @@ void gen_asm_param(IR *ir)
 void gen_asm_return(IR *ir)
 {
     if (curr_func->has_subroutine) {
-        emit_asm(lw, "$ra, %d($sp)  # retrieve return address", sp_offset);
+        emit_asm(movl, "%d(%%esp), %%eax  # retrieve return address", sp_offset); //????
     }
     
     int x = ensure(ir->rs);
 
     int size = curr_func->has_subroutine ? curr_func->size + 4 : curr_func->size;
-    emit_asm(addiu, "$sp, $sp, %d  # release stack space", size);
-    emit_asm(move, "$v0, %s  # prepare return value", reg_to_s(x));
-    emit_asm(jr, "$ra");
+    emit_asm(addl, "%d, %%esp  # release stack space", size);
+    emit_asm(movl, "%s, %%eax  # prepare return value", reg_to_s(x));
+    emit_asm(ret, "");
 }
 
 
@@ -232,13 +239,14 @@ void gen_asm_br(IR *ir)
 {
     int x = ensure(ir->rs);
     int y = ensure(ir->rt);
+    emit_asm(cmpl, "%s, %s", reg_to_s(x), reg_to_s(y));
     switch (ir->type) {
-        case IR_BEQ: emit_asm(beq, "%s, %s, %s", reg_to_s(x), reg_to_s(y), print_operand(ir->rd)); break;
-        case IR_BNE: emit_asm(bne, "%s, %s, %s", reg_to_s(x), reg_to_s(y), print_operand(ir->rd)); break;
-        case IR_BGT: emit_asm(bgt, "%s, %s, %s", reg_to_s(x), reg_to_s(y), print_operand(ir->rd)); break;
-        case IR_BLT: emit_asm(blt, "%s, %s, %s", reg_to_s(x), reg_to_s(y), print_operand(ir->rd)); break;
-        case IR_BGE: emit_asm(bge, "%s, %s, %s", reg_to_s(x), reg_to_s(y), print_operand(ir->rd)); break;
-        case IR_BLE: emit_asm(ble, "%s, %s, %s", reg_to_s(x), reg_to_s(y), print_operand(ir->rd)); break;
+        case IR_BEQ: emit_asm(je, "%s", print_operand(ir->rd)); break;
+        case IR_BNE: emit_asm(jne, "%s", print_operand(ir->rd)); break;
+        case IR_BGT: emit_asm(jg, "%s",  print_operand(ir->rd)); break;
+        case IR_BLT: emit_asm(jl, "%s",  print_operand(ir->rd)); break;
+        case IR_BGE: emit_asm(jge, "%s", print_operand(ir->rd)); break;
+        case IR_BLE: emit_asm(jle, "%s", print_operand(ir->rd)); break;
         default: assert(0);
     }
 }
@@ -254,7 +262,8 @@ void gen_asm_addr(IR *ir)
 {
     int x = allocate(ir->rd);
     set_dirty(x);
-    emit_asm(addiu, "%s, $sp, %d  # get %s's address", reg_to_s(x), sp_offset - ir->rs->address, print_operand(ir->rs));
+    emit_asm(movl, "%%esp, %s  # get %s's address", reg_to_s(x), print_operand(ir->rs));
+    emit_asm(addl, "%d, %s  # get %s's address", sp_offset - ir->rs->address, reg_to_s(x), print_operand(ir->rs));
 }
 
 

@@ -17,9 +17,9 @@
 
 # Naive C-like Compiler
 
-The code is derived from my compiler lab code in school.
-Since the lab only covers some basic topics of a compiler, and my implementation is dirty and naive,
-I want to keep polishing my code and present my work here.
+The code is derived from Wonicon's compiler lab code in school.
+This NCC generates x86 binary files instead of MIP32 ones.
+Since writing x86 back-end is confusing, we decide to use LLVM for the back-end.
 
 ## Supported Syntax
 

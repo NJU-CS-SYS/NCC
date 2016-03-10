@@ -10,6 +10,9 @@
 #define YYDEBUG 1
 
 extern int yylineno;
+/* Avoid some annoying warnings */
+extern int yylex();
+extern int yyerror(const char*);
 
 int is_syn_error = 0;
 Node prog;
