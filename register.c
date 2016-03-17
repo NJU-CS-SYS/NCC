@@ -17,41 +17,21 @@ extern FILE *asm_file;
 
 
 enum reg {
-    ZERO,
-    AT,
-    V0, V1,
-    A0, A1, A2, A3,
-    T0, T1, T2, T3, T4, T5, T6, T7,
-    S0, S1, S2, S3, S4, S5, S6, S7,
-    T8, T9,
-    K0, k1,
-    GP,
-    SP,
-    S8,
-    RA
+    EAX, EBX, ECX, EDX,
+    EBP, ESP, ESI, EDI
 };
 
 
 const char *reg_s[] = {
-    "$zero",                                                  // $0
-    "$at",                                                    // $1
-    "$v0", "$v1",                                             // $2  ~ $3
-    "$a0", "$a1", "$a2", "$a3",                               // $4  ~ $7
-    "$t0", "$t1", "$t2", "$t3", "$t4", "$t5", "$t6", "$t7",   // $8  ~ $15
-    "$s0", "$s1", "$s2", "$s3", "$s4", "$s5", "$s6", "$s7",   // $16 ~ $23
-    "$t8", "$t9",                                             // $24 ~ $25
-    "$k0", "$k1",                                             // $26 ~ $27
-    "$gp",                                                    // $28
-    "$sp",                                                    // $29
-    "$s8",                                                    // $30
-    "$ra"                                                     // $31
+    "%eax", "%ebx", "%ecx", "%edx",
+    "%ebp", "%esp", "%esi", "%edi"
 };
 
 
 #define NR_REG (sizeof(reg_s) / sizeof(reg_s[0]))
 
 
-#define NR_SAVE ((int)(S7 - S0))
+#define NR_SAVE 4
 
 #define MAX_VAR 4096
 
@@ -106,7 +86,7 @@ int get_reg(int start, int end)  // [start, end]
             if (vic->type == OPE_TEMP || vic->type == OPE_ADDR) {
                 WARN("Back up temporary variable");
             }
-            emit_asm(sw, "%s, %d($sp)  # Back up victim", reg_s[victim], sp_offset - ope_in_reg[victim]->address);
+            emit_asm(movl, "%s, %d(%%esp)  # Back up victim", reg_s[victim], sp_offset - ope_in_reg[victim]->address);
         }
         ope_in_reg[victim] = NULL;
         return victim;
@@ -144,12 +124,12 @@ int allocate(Operand ope)
     switch (ope->type) {
     case OPE_VAR:
     case OPE_BOOL:
-        reg = get_reg(S0, S7);
+        reg = get_reg(EAX, EDX);
         break;
     case OPE_TEMP:
     case OPE_ADDR:
     case OPE_INTEGER:
-        reg = get_reg(T0, T7);
+        reg = get_reg(EAX, EDX);
         break;
     default:
         PANIC("Unexpected operand type when allocating registers");
@@ -205,7 +185,7 @@ void push_all()
         if (ope != NULL && dirty[i] && (ope->next_use != MAX_LINE || ope->liveness)) {
             // Use next_use to avoid store dead temporary variables.
             // Use liveness to promise that user-defined variables are backed up.
-            emit_asm(sw, "%s, %d($sp)  # push %s", reg_s[i], sp_offset - ope->address, print_operand(ope));
+            emit_asm(movl, "%s, %d(%%esp)  # push %s", reg_s[i], sp_offset - ope->address, print_operand(ope));
         }
     }
 }

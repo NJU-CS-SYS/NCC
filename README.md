@@ -4,22 +4,20 @@
 
 ## 目标
 
-将类 C 的高级语言编译生成 x86 二进制可执行文件，由自制的内核加载运行。
+将类 C 的高级语言编译生成 x86 二进制可执行文件，由 NEMU 加载运行。
 
 ## TODO
 
 - [ ] 修改后端，生成 x86 二进制文件
-- [ ] 完善前端，增加对 C 语言语法的支持
+- [ ] 修改后段，增加对综合实验操作系统的接口的支持
+- [ ] 完善前端，增加对字符串的支持
 
 ---
-
-代码初始版本说明见下：
 
 # Naive C-like Compiler
 
 The code is derived from Wonicon's compiler lab code in school.
-This NCC generates x86 binary files instead of MIP32 ones.
-Since writing x86 back-end is confusing, we decide to use LLVM for the back-end.
+This NCC generates x86 assembly codes in AT&T format instead of MIP32 ones.
 
 ## Supported Syntax
 

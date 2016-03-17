@@ -27,13 +27,13 @@ int nr_arg = 0;  // The number of arguments have been encounterded, referred whe
 
 void gen_asm_label(IR *ir)
 {
-    fprintf(asm_file, "%s:\n", print_operand(ir->rs));
+    fprintf(asm_file, "_%s:\n", print_operand(ir->rs));
 }
 
 
 void gen_asm_func(IR *ir)
 {
-    fprintf(asm_file, "%s:\n", print_operand(ir->rs));
+    fprintf(asm_file, "_%s:\n", print_operand(ir->rs));
     // Spare stack space
     curr_func = ir->rs;
     sp_offset = curr_func->size;
@@ -113,7 +113,7 @@ void gen_asm_mul(IR *ir)
     set_dirty(x);
     emit_asm(pushl, "%%eax");
     emit_asm(movl, "%s, %%eax", reg_to_s(y));
-    emit_asm(mull, "%s, %%eax", reg_to_s(z));
+    emit_asm(mull, "%s", reg_to_s(z));
     emit_asm(movl, "%%eax, %s", reg_to_s(x));
     emit_asm(popl, "%%eax");
 }
@@ -149,7 +149,7 @@ void gen_asm_store(IR *ir)
 
 void gen_asm_goto(IR *ir)
 {
-    emit_asm(jmp, "%s", print_operand(ir->rs));
+    emit_asm(jmp, "_%s", print_operand(ir->rs));
 }
 
 
@@ -187,7 +187,7 @@ void gen_asm_call(IR *ir)
 
     }
 
-    emit_asm(call, "%s", ir->rs->name); // ?????
+    emit_asm(call, "_%s", ir->rs->name); // ?????
 
     clear_reg_state();
 
@@ -241,12 +241,12 @@ void gen_asm_br(IR *ir)
     int y = ensure(ir->rt);
     emit_asm(cmpl, "%s, %s", reg_to_s(x), reg_to_s(y));
     switch (ir->type) {
-        case IR_BEQ: emit_asm(je, "%s", print_operand(ir->rd)); break;
-        case IR_BNE: emit_asm(jne, "%s", print_operand(ir->rd)); break;
-        case IR_BGT: emit_asm(jg, "%s",  print_operand(ir->rd)); break;
-        case IR_BLT: emit_asm(jl, "%s",  print_operand(ir->rd)); break;
-        case IR_BGE: emit_asm(jge, "%s", print_operand(ir->rd)); break;
-        case IR_BLE: emit_asm(jle, "%s", print_operand(ir->rd)); break;
+        case IR_BEQ: emit_asm(je, "_%s", print_operand(ir->rd)); break;
+        case IR_BNE: emit_asm(jne, "_%s", print_operand(ir->rd)); break;
+        case IR_BGT: emit_asm(jg, "_%s",  print_operand(ir->rd)); break;
+        case IR_BLT: emit_asm(jl, "_%s",  print_operand(ir->rd)); break;
+        case IR_BGE: emit_asm(jge, "_%s", print_operand(ir->rd)); break;
+        case IR_BLE: emit_asm(jle, "_%s", print_operand(ir->rd)); break;
         default: assert(0);
     }
 }
@@ -270,8 +270,8 @@ void gen_asm_addr(IR *ir)
 void gen_asm_write(IR *ir)
 {
     int x = ensure(ir->rs);
-    emit_asm(move, "$a0, %s", reg_to_s(x));
-    emit_asm(jal, "write");
+    emit_asm(movl, "%s, %%eax", reg_to_s(x));
+    emit_asm(call, "_write");
 }
 
 
@@ -279,8 +279,8 @@ void gen_asm_read(IR *ir)
 {
     int x = allocate(ir->rd);
     set_dirty(x);
-    emit_asm(jal, "read");
-    emit_asm(move, "%s, $v0", reg_to_s(x));
+    emit_asm(call, "_read");
+    emit_asm(movl, "%%eax, %s", reg_to_s(x));
 }
 
 

@@ -1,25 +1,24 @@
-.data
-
-_prompt: .asciiz "Enter an integer:"
-_ret: .asciiz "\n"
-
-.globl main
-
-.text
-read:
-  li $v0, 4
-  la $a0, _prompt
+.section __data,__DATA
+.globl  _prompt
+_prompt:
+  .asciz "Enter an integer:"
+.globl  _ret
+_ret:
+  .asciz "\n"
+.section __text,__TEXT
+.globl _read
+_read:
+  movl $66, %eax
+  movl $_prompt, %ebx
+  int $0x80
+  ret
+.globl _write
+_write:
+  movl %eax, %ebx
+  movl $67, %eax
+  movl $_ret, %ecx
+  int $0x80
   syscall
-  li $v0, 5
-  syscall
-  jr $ra
-
-write:
-  li $v0, 1
-  syscall
-  li $v0, 4
-  la $a0, _ret
-  syscall
-  move $v0, $0
-  jr $ra
+  ret
+.globl _main
 
