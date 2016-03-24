@@ -1,0 +1,8 @@
+int mul(int a, int b){
+    return a*b;
+}
+
+int main(){
+    int i = 111;
+    return mul(i, i);
+}

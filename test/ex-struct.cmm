@@ -13,6 +13,5 @@ int main()
 {
     struct B a[2][2];
     a[0][0].m[0][0].a = 23;
-    write(a[0][0].m[0][0].a);
-    return 0;
+    return a[0][0].m[0][0].a;
 }

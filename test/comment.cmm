@@ -23,8 +23,8 @@ int foo()
 int main()
 {
     // Expect 2
-    write(foo());
+    //write(foo());
 
-    return 0;
+    return foo();
 }
 

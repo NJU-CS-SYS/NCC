@@ -16,7 +16,9 @@
 *.SS
 *.py
 *.d
+*.out
 cmm
+ncc
 test.cmm
 tags
 parser

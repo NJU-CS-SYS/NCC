@@ -16,17 +16,10 @@
 extern FILE *asm_file;
 
 
-enum reg {
-    EAX, EBX, ECX, EDX,
-    EBP, ESP, ESI, EDI
-};
-
-
 const char *reg_s[] = {
     "%eax", "%ebx", "%ecx", "%edx",
     "%ebp", "%esp", "%esi", "%edi"
 };
-
 
 #define NR_REG (sizeof(reg_s) / sizeof(reg_s[0]))
 

@@ -19,4 +19,10 @@ void set_dirty(int index);
 
 const char *reg_to_s(int index);
 
+enum reg {
+    EAX, EBX, ECX, EDX,
+    EBP, ESP, ESI, EDI
+};
+
+
 #endif //NJU_COMPILER_2015_REGISTER_H

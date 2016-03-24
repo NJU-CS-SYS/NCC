@@ -18,7 +18,7 @@ OBJS = $(CFILES:.c=.o)
 LFO = $(LFC:.c=.o)
 YFO = $(YFC:.c=.o)
 
-COMPILER := cmm
+COMPILER := ncc
 
 $(COMPILER): $(YFO) $(LFO) $(OBJS)
 	$(CC) -ggdb -o $@ $^

@@ -51,6 +51,6 @@ int main()
         }
         count = count + flag;
     }
-    write(count);
-    return 0;
+    //write(count);
+    return count;
 }

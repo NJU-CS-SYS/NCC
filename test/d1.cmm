@@ -27,17 +27,17 @@ int main()
         f = f - 2 + 1;
     }
     h = g1 - 2 + 3;
-    write(h);
+    //write(h);
     i = g1;
     while (g1 >= 1200 + 22) {
         i = g1 + 1024;
         g1 = replace(g1) - 1;
         i = g1;
     }
-    write(g1);
+    //write(g1);
     a = a + b;
     b = a + b;
     c = a + b;
-    write(c);
-    return 0;
+    //write(c);
+    return c;
 }
