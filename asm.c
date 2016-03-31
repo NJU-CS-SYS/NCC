@@ -37,9 +37,8 @@ void gen_asm_func(IR *ir)
     // Spare stack space
     curr_func = ir->rs;
     sp_offset = curr_func->size;
-    int ra = 0; //curr_func->has_subroutine ? 4 : 0;
-
-    emit_asm(addl, "$%d, %%esp  # only for variables, not records", -ir->rs->size - ra);
+    if(ir->rs->size != 0)
+        emit_asm(addl, "$%d, %%esp  # only for variables, not records", -ir->rs->size);
     /* In x86, 'call' will save the return address itself.
     if (curr_func->has_subroutine) {
         emit_asm(movl, "%%eax, %d(%%esp)  # Save return address", sp_offset);
@@ -53,7 +52,8 @@ void gen_asm_assign(IR *ir)
     int src = ensure(ir->rs);
     int dst = allocate(ir->rd);
     set_dirty(dst);
-    emit_asm(movl, "%s, %s", reg_to_s(src), reg_to_s(dst));
+    if(src != dst)
+        emit_asm(movl, "%s, %s", reg_to_s(src), reg_to_s(dst));
 }
 
 
@@ -63,7 +63,8 @@ void gen_asm_addi(Operand dst, Operand src, int imm)
     int first = ensure(src);
     int dest = allocate(dst);
     set_dirty(dest);
-    emit_asm(movl, "%s, %s", reg_to_s(first), reg_to_s(dest));
+    if(first != dest);
+        emit_asm(movl, "%s, %s", reg_to_s(first), reg_to_s(dest));
     emit_asm(addl, "$%d, %s", imm, reg_to_s(dest));
 }
 
@@ -81,7 +82,8 @@ void gen_asm_add(IR *ir)
         int second = ensure(ir->rt);
         int dst = allocate(ir->rd);
         set_dirty(dst);
-        emit_asm(movl, "%s, %s", reg_to_s(first), reg_to_s(dst));
+        if(first != dst)
+            emit_asm(movl, "%s, %s", reg_to_s(first), reg_to_s(dst));
         emit_asm(addl, "%s, %s", reg_to_s(second), reg_to_s(dst));
     }
 }
@@ -99,7 +101,8 @@ void gen_asm_sub(IR *ir)
         int second = ensure(ir->rt);
         int dst = allocate(ir->rd);
         set_dirty(dst);
-        emit_asm(movl, "%s, %s", reg_to_s(first), reg_to_s(dst));
+        if(first != dst)
+            emit_asm(movl, "%s, %s", reg_to_s(first), reg_to_s(dst));
         emit_asm(subl, "%s, %s", reg_to_s(second), reg_to_s(dst));
     }
 }
@@ -183,9 +186,10 @@ void gen_asm_call(IR *ir)
     // Here we still manage stack by hand instead of the 'pushl' instruction to minimize the 
     // change of the original code.
     int offset = nr_arg * 4;
-    emit_asm(addl, "$-%d, %%esp  # Open space for save and arguments", offset);
-
-    sp_offset += offset;
+    if(offset != 0){
+        emit_asm(addl, "$-%d, %%esp  # Open space for save and arguments", offset);
+        sp_offset += offset;
+    }
 
     push_all();
 
@@ -213,13 +217,14 @@ void gen_asm_call(IR *ir)
     int x = allocate(ir->rd);
     set_dirty(x);
 
-    if (ir->rd->next_use != MAX_LINE || ir->rd->liveness) {
+    if ((ir->rd->next_use != MAX_LINE || ir->rd->liveness) && x != EAX) {
         emit_asm(movl, "%s, %%eax", reg_to_s(x));
     }
 
-    emit_asm(addl, "$%d, %%esp  # Drawback save and arguments space", offset);
-
-    sp_offset -= offset;
+    if(offset != 0){
+        emit_asm(addl, "$%d, %%esp  # Drawback save and arguments space", offset);
+        sp_offset -= offset;
+    }
 
     nr_arg = 0;  // After translating the call, clear arg state
 }
@@ -251,9 +256,14 @@ void gen_asm_return(IR *ir)
 
     //int size = curr_func->has_subroutine ? curr_func->size + 4 : curr_func->size;
     int size = curr_func->size;
-    emit_asm(addl, "$%d, %%esp  # release stack space", size);
-    emit_asm(movl, "%s, %%eax  # prepare return value", reg_to_s(x));
-    emit_asm(ret, "");
+    if(size != 0)
+        emit_asm(addl, "$%d, %%esp  # release stack space", size);
+    if(x != EAX){
+        emit_asm(movl, "%s, %%eax  # prepare return value", reg_to_s(x));
+        emit_asm(ret, "");
+    } else {
+        emit_asm(ret, "           #return value prepared");
+    }
 }
 
 
