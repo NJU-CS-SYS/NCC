@@ -33,6 +33,7 @@ Node prog;
     INT
     ID
     TYPE
+    CHAR
 
 %token <op>
     RELOP
@@ -196,6 +197,7 @@ Exp             : Exp ASSIGNOP Exp { $$ = create_tree(EXP_is_ASSIGN, $2, $1, $3)
                 | ID               { $$ = create_tree(EXP_is_ID, $1->lineno, $1); }
                 | INT              { $$ = create_tree(EXP_is_INT, $1->lineno, $1); }
                 | FLOAT            { $$ = create_tree(EXP_is_FLOAT, $1->lineno, $1); }
+                | CHAR             { $$ = create_tree(EXP_is_CHAR, $1->lineno, $1); }
                 ;
 
 Args            : Exp COMMA Args  { $1->sibling = $3; $$ = $1; }

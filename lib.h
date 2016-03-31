@@ -44,9 +44,11 @@ enum ProductionTag {
     EXP_is_EXP_FIELD,
     EXP_is_INT,
     EXP_is_FLOAT,
+    EXP_is_CHAR,
     TERM_INT,
     TERM_FLOAT,
-    TERM_ID
+    TERM_ID,
+    TERM_CHAR
 };
 
 typedef enum _CmmType {

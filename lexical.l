@@ -26,6 +26,7 @@ yylloc.last_column = yycolumn + yyleng - 1;\
 yycolumn += yyleng;
 
 static enum yytokentype num(int radix);
+static enum yytokentype ascii();
 static enum yytokentype op(enum yytokentype type);
 static enum yytokentype sym(enum yytokentype type);
 static enum yytokentype node(enum yytokentype type, enum ProductionTag tag);
@@ -84,7 +85,9 @@ letter [a-zA-Z]
     }
     return num(8);
 }
+
 0|[1-9][0-9]* return num(10);
+\'.\'         return ascii();
 
 "//" { BEGIN ONE_LINE_COMMENT; }
 "/*" {
@@ -117,11 +120,20 @@ letter [a-zA-Z]
 %%
 static enum yytokentype num(int radix)
 {
-    yylval.nd = new_node(INT - FLOAT + 3);
+    yylval.nd = new_node();
     yylval.nd->lineno = yylineno;
     yylval.nd->tag = TERM_INT;
     yylval.nd->val.i = strtol(yytext, NULL, radix);
     return INT;
+}
+
+static enum yytokentype ascii()
+{
+    yylval.nd = new_node();
+    yylval.nd->lineno = yylineno;
+    yylval.nd->tag = TERM_CHAR;
+    yylval.nd->val.i = yytext[1];
+    return CHAR;
 }
 
 static enum yytokentype sym(enum yytokentype type)
