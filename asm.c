@@ -306,7 +306,7 @@ void gen_asm_write(IR *ir)
     emit_asm(call, "write");
 }
 
-void gen_asm_write(IR *ir)
+void gen_asm_writec(IR *ir)
 {
     int x = ensure(ir->rs);
     emit_asm(movl, "%s, %%eax", reg_to_s(x));
@@ -342,6 +342,7 @@ trans_handler handler[NR_IR_TYPE] = {
     [IR_ADDR]    = gen_asm_addr,
     [IR_READ]    = gen_asm_read,
     [IR_WRITE]   = gen_asm_write,
+    [IR_WRITEC]  = gen_asm_writec,
     [IR_PARAM]   = gen_asm_param,
     [IR_RET]     = gen_asm_return,
     [IR_BEQ]     = gen_asm_br,
