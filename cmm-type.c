@@ -6,6 +6,7 @@
 const char *class_s[] = {
     "int",
     "float",
+    "char",
     "array",
     "struct",
     "function",
@@ -34,8 +35,19 @@ Type _BASIC_FLOAT = {
     0
 };
 
+Type _BASIC_CHAR = {
+    CMM_CHAR,
+    "char",
+    { NULL },
+    { NULL },
+    { 0 },
+    { 4 },
+    0
+};
+
 Type *BASIC_INT = &_BASIC_INT;
 Type *BASIC_FLOAT = &_BASIC_FLOAT;
+Type *BASIC_CHAR = &_BASIC_CHAR;
 
 // Constructor
 Type *new_type(CmmType class, const char *name, Type *type, Type *link)

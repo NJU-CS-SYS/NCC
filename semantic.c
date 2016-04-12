@@ -168,6 +168,9 @@ static void spec_is_type(Node spec)
     if (!strcmp(type_name, BASIC_INT->name)) {
         spec->sema.type = BASIC_INT;
     }
+    else if (!strcmp(type_name, BASIC_CHAR->name)) {
+        spec->sema.type = BASIC_CHAR;
+    }
     else if (!strcmp(type_name, BASIC_FLOAT->name)) {
         spec->sema.type = BASIC_FLOAT;
     }
@@ -275,7 +278,7 @@ static void exp_is_unary(Node exp)
 
     Type *type = exp->child->sema.type;
 
-    if (typecmp(type, BASIC_INT)) {
+    if (typecmp(type, BASIC_INT) || typecmp(type, BASIC_CHAR)) {
         exp->sema.type = type;
     }
     else if (typecmp(type, BASIC_FLOAT) && exp->val.operator[0] == '!') {
@@ -298,11 +301,14 @@ static void exp_is_binary(Node exp)
     Type *ltype = lexp->sema.type;
     Type *rtype = rexp->sema.type;
 
-    if (!typecmp(ltype, rtype)) {
+    if (!typecmp(ltype, rtype) && 
+        !(typecmp(rtype, BASIC_CHAR) & typecmp(ltype, BASIC_INT)) &&
+        !(typecmp(ltype, BASIC_CHAR) & typecmp(rtype, BASIC_INT))){
         // Type mismatched
         SEMA_ERROR_MSG(exp->lineno, "Type mismatched for operands");
     }
-    else if (!typecmp(ltype, BASIC_INT) && !typecmp(ltype, BASIC_FLOAT)) {
+    else if (!typecmp(ltype, BASIC_INT) && !typecmp(ltype, BASIC_FLOAT) && 
+             !typecmp(ltype, BASIC_CHAR)) {
         // Type matched, but cannot be operated
         SEMA_ERROR_MSG(exp->lineno, "The type is not allowed in operation '%s'", exp->val.operator);
     }
@@ -320,7 +326,8 @@ static void exp_is_assign(Node exp)
     sema_visit(lexp);
     sema_visit(rexp);
 
-    if (!typecmp(lexp->sema.type, rexp->sema.type)) {
+    if (!typecmp(lexp->sema.type, rexp->sema.type) && 
+        !(typecmp(lexp->sema.type, BASIC_CHAR) & typecmp(rexp->sema.type, BASIC_INT))) {
         SEMA_ERROR_MSG(exp->lineno, "Type mismatched for assignment.");
     }
     else if (!is_lval(lexp)) {
@@ -449,6 +456,10 @@ static void exp_is_float(Node exp)
     exp->sema.type = BASIC_FLOAT;
 }
 
+static void exp_is_char(Node exp)
+{
+    exp->sema.type = BASIC_CHAR;
+}
 
 static void stmt_is_return(Node stmt)
 {
@@ -632,6 +643,10 @@ static void prog_is_extdef(Node prog)
     write->param = new_type(CMM_PARAM, "o", BASIC_INT, NULL);
     insert("write", write, -1, get_symtab_top());
 
+    Type *writec = new_type(CMM_FUNC, "writec", NULL, NULL);
+    writec->param = new_type(CMM_PARAM, "o", BASIC_CHAR, NULL);
+    insert("writec", writec, -1, get_symtab_top());
+
     Node extdef = prog->child;
     while (extdef != NULL) {
         sema_visit(extdef);
@@ -672,6 +687,7 @@ static ast_visitor sema_visitors[] = {
     [STMT_is_RETURN]             = stmt_is_return,
     [EXP_is_INT]                 = exp_is_int,
     [EXP_is_FLOAT]               = exp_is_float,
+    [EXP_is_CHAR]                = exp_is_char,
     [EXP_is_ID]                  = exp_is_id,
     [EXP_is_ASSIGN]              = exp_is_assign,
     [EXP_is_EXP_IDX]             = exp_is_exp_idx,

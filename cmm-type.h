@@ -34,6 +34,7 @@ typedef struct _Type {
 
 extern Type *BASIC_INT;
 extern Type *BASIC_FLOAT;
+extern Type *BASIC_CHAR;
 
 Type *new_type(CmmType class, const char *name, Type *type, Type *link);
 bool typecmp(const Type *x, const Type *y);

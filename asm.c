@@ -306,6 +306,13 @@ void gen_asm_write(IR *ir)
     emit_asm(call, "write");
 }
 
+void gen_asm_write(IR *ir)
+{
+    int x = ensure(ir->rs);
+    emit_asm(movl, "%s, %%eax", reg_to_s(x));
+    emit_asm(call, "writec");
+}
+
 
 void gen_asm_read(IR *ir)
 {

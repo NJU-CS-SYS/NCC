@@ -109,6 +109,9 @@ const char *print_operand(Operand ope)
             case OPE_INTEGER:
                 sprintf(str, "#%d", ope->integer);
                 break;
+            case OPE_CHAR:
+                sprintf(str, "#%c", ope->integer);
+                break;
             case OPE_REFADDR:
                 sprintf(str, "&r%d", ope->index);
                 break;
@@ -145,7 +148,8 @@ Operand calc_const(IR_Type op, Operand left, Operand right)
 
     Operand rst = new_operand(left->type);
     switch (left->type) {
-        case OPE_INTEGER: {
+        case OPE_INTEGER: 
+        case OPE_CHAR:{
             switch (op) {
                 case IR_ADD:
                     rst->integer = left->integer + right->integer;

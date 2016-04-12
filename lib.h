@@ -47,13 +47,14 @@ enum ProductionTag {
     EXP_is_CHAR,
     TERM_INT,
     TERM_FLOAT,
-    TERM_ID,
-    TERM_CHAR
+    TERM_CHAR,
+    TERM_ID
 };
 
 typedef enum _CmmType {
     CMM_INT,
     CMM_FLOAT,
+    CMM_CHAR,
     CMM_ARRAY,
     CMM_STRUCT,
     CMM_FUNC,
@@ -100,6 +101,7 @@ typedef enum IR_Type {
     // I/O类指令
     IR_READ,
     IR_WRITE,
+    IR_WRITEC,
     NR_IR_TYPE
 } IR_Type;
 
@@ -114,6 +116,7 @@ typedef enum {
     OPE_REFADDR,  // REF的首元素分身
     OPE_INTEGER,
     OPE_FLOAT,
+    OPE_CHAR,
     OPE_LABEL,
     OPE_FUNC,
     NR_OPE_TYPE

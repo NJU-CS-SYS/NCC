@@ -155,7 +155,8 @@ static void translate_exp_is_id(Node exp)
 //
 static void translate_exp_is_const(Node nd)
 {
-    assert(nd->tag == EXP_is_INT || nd->tag == EXP_is_FLOAT);
+    assert(nd->tag == EXP_is_INT || nd->tag == EXP_is_FLOAT || 
+           nd->tag == EXP_is_CHAR);
 
     Operand const_ope;
     switch (nd->child->tag) {
@@ -166,6 +167,10 @@ static void translate_exp_is_const(Node nd)
         case TERM_FLOAT:
             const_ope = new_operand(OPE_FLOAT);
             const_ope->real = nd->child->val.f;
+            break;
+        case TERM_CHAR:
+            const_ope = new_operand(OPE_CHAR);
+            const_ope->integer = nd->child->val.i;
             break;
         default:
             return;
@@ -373,7 +378,7 @@ static void translate_unary_operation(Node exp)
 
     // 常量计算
     Operand const_ope = new_operand(OPE_NOT_USED);
-    if (rexp->dst->type == OPE_INTEGER) {
+    if (rexp->dst->type == OPE_INTEGER || rexp->dst->type == OPE_CHAR) {
         const_ope->type = OPE_INTEGER;
         const_ope->integer = -rexp->dst->integer;
         free_ope(&exp->dst);
@@ -435,6 +440,7 @@ static void translate_binary_operation(Node exp)
         Operand const_ope = new_operand(OPE_NOT_USED);
         switch (lope->type) {
             case OPE_INTEGER:
+            case OPE_CHAR:
                 const_ope->type = OPE_INTEGER;
                 CALC(exp->val.operator[0], lope, rope, const_ope, integer);
             case OPE_FLOAT:
@@ -527,6 +533,12 @@ static void translate_call(Node call)
         translate_dispatcher(arg);
         try_deref(arg);  // 这里的思路和return是类似的
         new_instr(IR_WRITE, arg->dst, NULL, NULL);
+    }
+    else if (!strcmp(func->val.s, "writec")) {
+        arg->dst = new_operand(OPE_TEMP);
+        translate_dispatcher(arg);
+        try_deref(arg);  // 这里的思路和return是类似的
+        new_instr(IR_WRITEC, arg->dst, NULL, NULL);
     }
     else {  // Common function call
         pass_arg(arg);
@@ -926,7 +938,9 @@ static void translate_dec_is_vardec(Node dec)
     // TODO eliminate coercion
     Symbol *sym = (Symbol *)query(iterator->val.s);
 
-    if (!typecmp(sym->type, BASIC_INT) && !typecmp(sym->type, BASIC_FLOAT)) {
+    if (!typecmp(sym->type, BASIC_INT) && 
+        !typecmp(sym->type, BASIC_FLOAT) &&
+        !typecmp(sym->type, BASIC_CHAR)) {
         sym->address = new_operand(OPE_REF);
         sym->address->size = sym->type->type_size;
         Operand size = new_operand(OPE_INTEGER);

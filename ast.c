@@ -48,7 +48,8 @@ static int body_size[] = {
     [EXP_is_EXP_IDX] = 2,
     [EXP_is_EXP_FIELD] = 2,
     [EXP_is_INT] = 1,
-    [EXP_is_FLOAT] = 1
+    [EXP_is_FLOAT] = 1,
+    [EXP_is_CHAR] = 1
 };
 
 
