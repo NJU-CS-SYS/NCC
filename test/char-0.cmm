@@ -1,0 +1,15 @@
+int main(){
+    char c[5];
+    int i = 0;
+    c[0] = 'H';
+    c[1] = 'e';
+    c[2] = 'l';
+    c[3] = 'l';
+    c[4] = 'o';
+    while( i != 5 ){
+        writec(c[i]);
+        i = i+1;
+    }
+    write(i);
+    return 0;
+}

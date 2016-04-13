@@ -85,6 +85,7 @@ static const char *ir_format[] = {
     [IR_PARAM]   = "%sPARAM %s",           // DEC PARAM, 第一个 %s 过滤 rd_s
     [IR_READ]    = "READ %s",              // READ
     [IR_WRITE]   = "%sWRITE %s",           // WRITE, 第一个 %s 过滤 rd_s, 输出语义不用 rd
+    [IR_WRITEC]   = "%sWRITEC %s",         // WRITEC, 第一个 %s 过滤 rd_s, 输出语义不用 rd
 };
 
 //
@@ -174,7 +175,8 @@ int in_func_check(IR buf[], int index, int n)
 
         IR_Type type = buf[index].type;
 
-        if (type == IR_CALL || type == IR_READ || type == IR_WRITE) {
+        if (type == IR_CALL || type == IR_READ || 
+            type == IR_WRITE || type == IR_WRITEC) {
             curr->rs->has_subroutine = true;
         }
     }

@@ -1008,6 +1008,7 @@ static trans_visitor trans_visitors[] =
     [EXP_is_UNARY]                 = translate_unary_operation,
     [EXP_is_INT]                   = translate_exp_is_const,
     [EXP_is_FLOAT]                 = translate_exp_is_const,
+    [EXP_is_CHAR]                  = translate_exp_is_const,
     [EXP_is_ID]                    = translate_exp_is_id,
     [EXP_is_ID_ARG]                = translate_call,
     [EXP_is_ASSIGN]                = translate_exp_is_assign,

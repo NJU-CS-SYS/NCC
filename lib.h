@@ -1,7 +1,7 @@
 #ifndef LIB_H
 #define LIB_H
 
-//#define DEBUG
+#define DEBUG
 
 enum ProductionTag {
     UNSIMPLIFIED,

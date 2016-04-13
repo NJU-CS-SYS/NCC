@@ -122,6 +122,7 @@ int allocate(Operand ope)
     case OPE_TEMP:
     case OPE_ADDR:
     case OPE_INTEGER:
+    case OPE_CHAR:
         reg = get_reg(EAX, EDX);
         break;
     default:
