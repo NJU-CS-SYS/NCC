@@ -1,15 +1,17 @@
 int main(){
-    char c[5];
+    char c[6];
     int i = 0;
     c[0] = 'H';
     c[1] = 'e';
     c[2] = 'l';
     c[3] = 'l';
     c[4] = 'o';
+    c[5] = ' ';
     while( i != 5 ){
         writec(c[i]);
         i = i+1;
     }
+    writec(c[5]+1);
     write(i);
     return 0;
 }
