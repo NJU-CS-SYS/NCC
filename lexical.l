@@ -88,6 +88,7 @@ letter [a-zA-Z]
 
 0|[1-9][0-9]* return num(10);
 \'.\'         return ascii();
+\'\\.\'       return ascii()
 
 "//" { BEGIN ONE_LINE_COMMENT; }
 "/*" {
@@ -132,7 +133,14 @@ static enum yytokentype ascii()
     yylval.nd = new_node();
     yylval.nd->lineno = yylineno;
     yylval.nd->tag = TERM_CHAR;
-    yylval.nd->val.i = yytext[1];
+    if(yytext[1] != '\\'){
+        yylval.nd->val.i = yytext[1];
+    } else {
+        if(yytext[2] == 'n') yylval.nd->val.i = 0x0a;
+        else if(yytext[2] == 't') yylval.nd->val.i = 0x09;
+        else if(yytext[2] == '\\') yylval.nd->val.i = 0x5c;
+        else yylval.nd->val.i = 0x00;
+    }
     return CHAR;
 }
 

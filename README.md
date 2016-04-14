@@ -8,7 +8,6 @@
 
 ## TODO
 
-- [ ] 完善前端，增加对字符串的支持
 - [ ] 增加预处理机制
 - [ ] 增加对全局变量的支持
 - [ ] 增加对函数声明的支持
@@ -68,7 +67,15 @@ int main()
     int foo;
     int bar = 3;
     int vec[2];
+    char hello[5];
     struct A a;
+
+    /* character array */
+    hello[0] = 'h';
+    hello[1] = 'e';
+    hello[2] = 'l';
+    hello[3] = 'k' + 1;    //char and calculate with int
+    hello[4] = 'o';
 
     /* Statements, like follows */
 
@@ -87,8 +94,8 @@ int main()
     }
 
     // the three parts of for-loop cannot be omitted currently
-    for (foo = 0; foo < 10; foo = foo + 1) {
-        write(foo);
+    for (foo = 0; foo < 5; foo = foo + 1) {
+        writec(hello[foo]);
     }
 
     /* Expressions */
@@ -103,4 +110,4 @@ int main()
 
     return 0;
 }
-
+```
