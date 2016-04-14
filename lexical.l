@@ -139,7 +139,8 @@ static enum yytokentype ascii()
         if(yytext[2] == 'n') yylval.nd->val.i = 0x0a;
         else if(yytext[2] == 't') yylval.nd->val.i = 0x09;
         else if(yytext[2] == '\\') yylval.nd->val.i = 0x5c;
-        else yylval.nd->val.i = 0x00;
+        else if(yytext[2] == '\0') yylval.nd->val.i = 0x00;
+        else yylval.nd->val.i = yytext[2];
     }
     return CHAR;
 }
