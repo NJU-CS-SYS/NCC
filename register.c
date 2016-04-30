@@ -127,6 +127,7 @@ int allocate(Operand ope)
         break;
     default:
         PANIC("Unexpected operand type when allocating registers");
+        reg = get_reg(EAX, EDX);
     }
 
     LOG("Allocate %s to register %s", print_operand(ope), reg_to_s(reg));

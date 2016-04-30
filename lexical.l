@@ -88,7 +88,7 @@ letter [a-zA-Z]
 
 0|[1-9][0-9]* return num(10);
 \'.\'         return ascii();
-\'\\.\'       return ascii()
+\'\\.\'       return ascii();
 
 "//" { BEGIN ONE_LINE_COMMENT; }
 "/*" {

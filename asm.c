@@ -63,7 +63,7 @@ void gen_asm_addi(Operand dst, Operand src, int imm)
     int first = ensure(src);
     int dest = allocate(dst);
     set_dirty(dest);
-    if(first != dest);
+    if(first != dest)
         emit_asm(movl, "%s, %s", reg_to_s(first), reg_to_s(dest));
     emit_asm(addl, "$%d, %s", imm, reg_to_s(dest));
 }
