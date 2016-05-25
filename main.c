@@ -56,6 +56,10 @@ int main(int argc, char *argv[])
             /* Generate asm codes */
             translate();
         }
+    } else {
+        /* Syntax error */
+        free_ast();
+        return 2;
     }
     
     /* Release the parsing tree. */

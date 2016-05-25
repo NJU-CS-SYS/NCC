@@ -23,6 +23,6 @@ for file in $TESTCASE; do
     mv $EXE ./test/
 done
 
-rm *.ir
+rm -f *.ir
 
 exit 0

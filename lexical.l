@@ -63,7 +63,7 @@ letter [a-zA-Z]
 "&&"                return op(AND);
 >|<|>=|<=|==|!=     return op(RELOP);
 
-"int"|"float"                     return node(TYPE, TERM_ID);
+"int"|"float"|"char"              return node(TYPE, TERM_ID);
 ({letter}|_)({letter}|{digit}|_)* return node(ID, TERM_ID);
 
 [0-9]+\.[0-9]+ {

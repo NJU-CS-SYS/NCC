@@ -126,7 +126,7 @@ const char *print_operand(Operand ope)
 // 常量判断
 bool is_const(Operand ope)
 {
-    return ope->type == OPE_INTEGER || ope->type == OPE_FLOAT;
+    return ope->type == OPE_INTEGER || ope->type == OPE_CHAR || ope->type == OPE_FLOAT;
 }
 
 // 块内临时变量判断
