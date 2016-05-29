@@ -17,6 +17,7 @@
 *.py
 *.d
 *.out
+!predefine*.S
 cmm
 ncc
 test.cmm

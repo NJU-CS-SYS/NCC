@@ -13,6 +13,9 @@ extern FILE *asm_file;  // Stream to store assembly code.
 
 static Block blk_buf[MAX_LINE];
 static int nr_blk;
+IR global_var_buf[16];
+char global_var_name[16][32];
+int global_count;
 
 // 指令缓冲区
 static IR instr_buffer[MAX_LINE];
@@ -85,7 +88,8 @@ static const char *ir_format[] = {
     [IR_PARAM]   = "%sPARAM %s",           // DEC PARAM, 第一个 %s 过滤 rd_s
     [IR_READ]    = "READ %s",              // READ
     [IR_WRITE]   = "%sWRITE %s",           // WRITE, 第一个 %s 过滤 rd_s, 输出语义不用 rd
-    [IR_WRITEC]   = "%sWRITEC %s",         // WRITEC, 第一个 %s 过滤 rd_s, 输出语义不用 rd
+    [IR_WRITEC]  = "%sWRITEC %s",          // WRITEC, 第一个 %s 过滤 rd_s, 输出语义不用 rd
+    [IR_GLOBAL]  = "%sGLOBAL %s %s",       // GLOABL, 第一个 %s 过滤 rd_s, 全局变量声明，第二个 %s 输出变量名，第三个 %s 输出初始化值。
 };
 
 //
@@ -209,6 +213,9 @@ void print_instr(FILE *file)
     optimize_in_block();
 
 #ifdef DEBUG
+    for (int i = 0; i < global_count; i++) {
+        print_single_instr(global_var_buf[i], file);
+    }
     for (int i = 0; i < nr_instr; i++) {
         print_single_instr(instr_buffer[i], file);
     }
@@ -219,10 +226,20 @@ void print_instr(FILE *file)
     //  Generate assembly code
     ////////////////////////////////////////////////////////
 
-    // Predefined functions
-
-    FILE *predef = fopen("predefine.S", "r");
+    // Predefined variables
+    FILE *predef = fopen("predefine-data.S", "r");
     char linebuf[128];  // 128 is enough?
+    while (fgets(linebuf, 128, predef)) {
+        fputs(linebuf, asm_file);
+    }
+    fclose(predef);
+    // 全局变量定义应该在数据段
+    // 所有 IR_GLOBAL，在此段进行翻译
+    for (int i = 0; i < global_count; i++){
+        gen_asm(&global_var_buf[i]);
+    }
+    // Predefined functions.
+    predef = fopen("predefine-text.S", "r");
     while (fgets(linebuf, 128, predef)) {
         fputs(linebuf, asm_file);
     }
@@ -433,13 +450,29 @@ int compress_ir(IR instr[], int n)
 //      替换成:
 //        IF !cond GOTO L1
 //      当然可能要确保 L0 的引用只有这一处, 否则还是要保留 LABEL L0 的
-//   3. 将 2 产生的 NOP 通过移动数组删除(那样子标签编号要最后做)
+//   3. 将所有的全局变量声明移动到单独的 global_var_buf
+//   4. 将 2、3 产生的 NOP 通过移动数组删除(那样子标签编号要最后做)
 //
 void preprocess_ir()
 {
     IR *pIR = &instr_buffer[0];
 
+    // 移动所有的全局变量定义
+    global_count = 0;
+    memset(global_var_name, 0, 16*32*sizeof(char));
+    for (int i = 0; i < nr_instr; i++){
+        if(pIR->type == IR_GLOBAL){
+            memcpy(&global_var_buf[global_count], pIR, sizeof(*pIR));
+            memcpy(&global_var_name[global_count][1], pIR->rs->name, strlen(pIR->rs->name));
+            global_var_name[global_count][0] = '$';
+            global_count++;
+            pIR->type = IR_NOP;
+        }
+        pIR++;
+    }
+
     // Label 的引用计数
+    pIR = &instr_buffer[0];
     for (int i = 0; i < nr_instr; i++) {
         if (is_branch(pIR)) {
             pIR->rd->label_ref_cnt++;

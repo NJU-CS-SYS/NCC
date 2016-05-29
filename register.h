@@ -24,5 +24,7 @@ enum reg {
     EBP, ESP, ESI, EDI
 };
 
+#define GLOBAL_BASE 666
+
 
 #endif //NJU_COMPILER_2015_REGISTER_H

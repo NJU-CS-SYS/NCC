@@ -1,7 +1,7 @@
 #ifndef LIB_H
 #define LIB_H
 
-//#define DEBUG
+#define DEBUG
 
 enum ProductionTag {
     UNSIMPLIFIED,
@@ -102,12 +102,17 @@ typedef enum IR_Type {
     IR_READ,
     IR_WRITE,
     IR_WRITEC,
+
+    // 全局变量指令
+    IR_GLOBAL,
+
     NR_IR_TYPE
 } IR_Type;
 
 typedef enum {
     OPE_NOT_USED,
     OPE_VAR,      // 变量
+    OPE_GLOBAL,   // 全局变量直接通过变量名引用
     OPE_REF,      // 引用类型, 包括数组和结构类型, 引用类型的首元素支持不解引用直接访问
     OPE_BOOL,     // 由于布尔值跨基本块却不能被优化掉, 所以开此特例
     OPE_TEMP,     // 编译器自行分配的临时变量

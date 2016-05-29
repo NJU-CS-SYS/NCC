@@ -589,6 +589,7 @@ static void extdec_is_vardec(Node extdec)
 
 static void extdef_is_spec_extdec(Node extdef)
 {
+    // Global variables declaration.
     assert(extdef->tag == EXTDEF_is_SPEC_EXTDEC);
     
     Node spec = extdef->child;

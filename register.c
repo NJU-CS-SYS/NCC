@@ -40,13 +40,22 @@ int dirty[NR_REG];  // True if $sx is written
 
 void set_dirty(int index)
 {
-    dirty[index] = 1;
+    if(index < GLOBAL_BASE){
+        dirty[index] = 1;
+    }
 }
 
 
 const char *reg_to_s(int index)
 {
-    return reg_s[index];
+    if(index < GLOBAL_BASE){
+        return reg_s[index];
+    } else {
+        // global variable name output.
+        index = index - GLOBAL_BASE;
+        assert(index < global_count);
+        return global_var_name[index];
+    }
 }
 
 
@@ -84,6 +93,18 @@ int get_reg(int start, int end)  // [start, end]
         ope_in_reg[victim] = NULL;
         return victim;
     }
+}
+
+int get_global(Operand ope)  // Get the global varible slot in global_var_buf
+{
+    // Add global varible index search.
+    for(int i=0; i < global_count; i++){
+        if(strcmp(ope->name, global_var_buf[i].rs->name) == 0){
+            return GLOBAL_BASE + i;
+        }
+    }
+    PANIC("Cannot find global varible %s", ope->name);
+    return GLOBAL_BASE;
 }
 
 
@@ -125,13 +146,20 @@ int allocate(Operand ope)
     case OPE_CHAR:
         reg = get_reg(EAX, EDX);
         break;
+    case OPE_GLOBAL:
+        reg = get_global(ope);
+        break;
     default:
         PANIC("Unexpected operand type when allocating registers");
         reg = get_reg(EAX, EDX);
     }
 
-    LOG("Allocate %s to register %s", print_operand(ope), reg_to_s(reg));
-    ope_in_reg[reg] = ope;
+    if(reg < GLOBAL_BASE){
+        ope_in_reg[reg] = ope;
+        LOG("Allocate %s to register %s", print_operand(ope), reg_to_s(reg));
+    } else {
+        LOG("Allocate global variable %s", print_operand(ope));
+    }
 
     return reg;
 }
@@ -145,6 +173,11 @@ int allocate(Operand ope)
 int ensure(Operand ope)
 {
     TEST(ope, "Operand is null");
+
+    if(ope->type == OPE_GLOBAL){
+        LOG("Find global variable %s", print_operand(ope));
+        return get_global(ope);
+    }
 
     for (int i = 0; i < NR_REG; i++) {
         if (ope_in_reg[i] && cmp_operand(ope, ope_in_reg[i])) {

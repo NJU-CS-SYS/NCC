@@ -104,6 +104,7 @@ const Symbol *query(const char *sym)
         if (result != NULL) {
             return result;
         }
+        LOG("Fallback for %s", sym);
     }
 
     return NULL;

@@ -36,6 +36,10 @@ Operand new_operand(Ope_Type type)
             p->size = 4;
             p->index = nr_ope++;
             break;
+        case OPE_GLOBAL:
+            p->liveness = ALIVE;
+            p->size = 4;
+            break;
         case OPE_REF:
             p->liveness = ALIVE;
             p->index = nr_ope++;
@@ -80,6 +84,9 @@ const char *print_operand(Operand ope)
         switch (ope->type) {
             case OPE_VAR:
                 sprintf(str, "v%d", ope->index);
+                break;
+            case OPE_GLOBAL:
+                sprintf(str, "%s", ope->name);
                 break;
             case OPE_REF:
                 //sprintf(str, "r%d", ope->index);

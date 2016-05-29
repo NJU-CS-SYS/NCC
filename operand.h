@@ -27,8 +27,10 @@ struct Operand_ {
     // OPE_FLOAT
     float real;        // 固有属性: 该操作数作为浮点型常数的值
 
+    // OPE_GLOBAL, OPE_FUNC
+    const char *name;  // 固有属性: 该操作数作为函数时的函数名或全局变量名
+
     // OPE_FUNC
-    const char *name;  // 固有属性: 该操作数作为函数时的函数名
     int size;          // Total variables size for a function
     int nr_arg;        // The number of arguments
     bool has_subroutine;

@@ -1,0 +1,12 @@
+int i;
+
+int add(int a, int b){
+    i = a + b;
+    return a-b;
+}
+
+int main(){
+    i = 15;
+    add(i, 5);
+    return 0;
+}

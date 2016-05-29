@@ -322,10 +322,17 @@ void gen_asm_read(IR *ir)
     emit_asm(movl, "%%eax, %s", reg_to_s(x));
 }
 
+void gen_asm_global(IR *ir)
+{
+    fprintf(asm_file, ".globl %s\n%s:\n", ir->rs->name, ir->rs->name);
+    fprintf(asm_file, "  .long %d\n", ir->rt->integer);
+}
+
 
 typedef void(*trans_handler)(IR *);
 
 trans_handler handler[NR_IR_TYPE] = {
+    [IR_GLOBAL]  = gen_asm_global,
     [IR_DEC]     = gen_asm_dec,
     [IR_FUNC]    = gen_asm_func,
     [IR_ASSIGN]  = gen_asm_assign,

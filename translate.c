@@ -64,10 +64,13 @@ void translate()
 static void translate_ast(Node ast)
 {
     Node extdef = ast->child;
+    push_symtab(ast->sema.symtab);
     while (extdef != NULL) {
         translate_dispatcher(extdef);
         extdef = extdef->sibling;
     }
+    Symbol **symtab = pop_symtab();
+    assert(symtab == ast->sema.symtab);
 }
 
 
@@ -156,7 +159,7 @@ static void translate_exp_is_id(Node exp)
 static void translate_exp_is_const(Node nd)
 {
     assert(nd->tag == EXP_is_INT || nd->tag == EXP_is_FLOAT || 
-           nd->tag == EXP_is_CHAR);
+            nd->tag == EXP_is_CHAR);
 
     Operand const_ope;
     switch (nd->child->tag) {
@@ -723,7 +726,7 @@ static void translate_for(Node stmt)
     Node loop_stmt = step_exp->sibling;
 
     translate_dispatcher(init_exp);
-    
+
     Operand begin = new_operand(OPE_LABEL);
     cond_exp->label_true = new_operand(OPE_LABEL);
     cond_exp->label_false = new_operand(OPE_LABEL);
@@ -865,9 +868,42 @@ static void translate_stmt_is_exp(Node stmt)
 //  Definition translation
 /////////////////////////////////////////////////////////////////////
 
+static void translate_extdef_spec_extdec(Node extdef)
+{
+    Node spec = extdef->child;
+    Node extdec = spec->sibling;
+    translate_dispatcher(extdec);
+}
 
 static void translate_extdef_spec(Node extdef)
 {
+}
+
+//
+// 翻译函数：全局变量的定义
+//
+static void translate_extdec_vardec(Node extdec)
+{
+    Node vardec = extdec->child;
+    Node iterator;
+    while(vardec != NULL){
+        iterator = vardec->child;
+        // TODO: 暂时不支持全局数组，除了 int 和 char 之外的类型
+        assert(iterator->tag == TERM_ID); 
+        Symbol *sym = (Symbol *)query(iterator->val.s);
+        assert(typecmp(sym->type, BASIC_INT) || typecmp(sym->type, BASIC_CHAR));
+        sym->address = new_operand(OPE_GLOBAL);
+        sym->address->name = iterator->val.s;
+        sym->address->base_type = sym->type;
+        // 将全局变量初始化，默认为 0
+        Operand const_ope;
+        const_ope = new_operand(OPE_INTEGER);
+        const_ope->integer = 0;
+
+        new_instr(IR_GLOBAL, sym->address, const_ope, NULL);
+
+        vardec = vardec->sibling;
+    }
 }
 
 
@@ -879,7 +915,7 @@ static void translate_extdef_func(Node extdef)
     translate_dispatcher(func);
     Node compst = func->sibling;
     translate_dispatcher(compst);
-    
+
     Symbol **symtab = pop_symtab();
     assert(symtab == extdef->sema.symtab);
 }
@@ -939,8 +975,8 @@ static void translate_dec_is_vardec(Node dec)
     Symbol *sym = (Symbol *)query(iterator->val.s);
 
     if (!typecmp(sym->type, BASIC_INT) && 
-        !typecmp(sym->type, BASIC_FLOAT) &&
-        !typecmp(sym->type, BASIC_CHAR)) {
+            !typecmp(sym->type, BASIC_FLOAT) &&
+            !typecmp(sym->type, BASIC_CHAR)) {
         sym->address = new_operand(OPE_REF);
         sym->address->size = sym->type->type_size;
         Operand size = new_operand(OPE_INTEGER);
@@ -988,8 +1024,10 @@ static void translate_def_is_spec_dec(Node def)
 static trans_visitor trans_visitors[] =
 {
     [PROG_is_EXTDEF]               = translate_ast,
+    [EXTDEF_is_SPEC_EXTDEC]        = translate_extdef_spec_extdec,
     [EXTDEF_is_SPEC]               = translate_extdef_spec,
     [EXTDEF_is_SPEC_FUNC_COMPST]   = translate_extdef_func,
+    [EXTDEC_is_VARDEC]             = translate_extdec_vardec,
     [FUNC_is_ID_VAR]               = translate_func_head,
     [COMPST_is_DEF_STMT]           = translate_compst,
     [DEC_is_VARDEC]                = translate_dec_is_vardec,
