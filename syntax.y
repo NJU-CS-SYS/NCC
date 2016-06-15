@@ -57,6 +57,7 @@ Node prog;
     ExtDef
     ExtDefList
     ExtDecList
+    ExtDec
     Specifier
     StructSpecifier
     VarDec
@@ -110,9 +111,12 @@ ExtDef          : Specifier ExtDecList SEMI  { $$ = create_tree(EXTDEF_is_SPEC_E
                 | Specifier FunDec CompSt    { $$ = create_tree(EXTDEF_is_SPEC_FUNC_COMPST, $1->lineno, $1, $2, $3); }
                 ;
 
-ExtDecList      : VarDec                  { $$ = create_tree(EXTDEC_is_VARDEC, $1->lineno, $1); }
-                | VarDec COMMA ExtDecList { $1->sibling = $3; $$ = $1; }
+ExtDecList      : ExtDec        
+                | ExtDec COMMA ExtDecList { $1->sibling = $3; $$ = $1; }
                 ;
+
+ExtDec          : VarDec                  { $$ = create_tree(EXTDEC_is_VARDEC, $1->lineno, $1);} 
+                | VarDec ASSIGNOP INT     { $$ = create_tree(EXTDEC_is_VARDEC_INITIALIZATION, $1->lineno, $1, $3);}
 
 /* Specifiers */
 

@@ -58,6 +58,5 @@ bool can_jump(IR *pIR);
 const char *ir_to_s(IR *);
 
 IR global_var_buf[16];
-char global_var_name[16][32];
 int global_count;
 #endif // __IR_H__

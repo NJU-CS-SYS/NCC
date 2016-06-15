@@ -570,7 +570,6 @@ static void compst_is_def_stmt(Node compst)
 static void extdec_is_vardec(Node extdec)
 {
     Node vardec = extdec->child;
-    while (vardec != NULL) {
         vardec->sema.type = extdec->sema.type;
         sema_visit(vardec);
 
@@ -582,10 +581,8 @@ static void extdec_is_vardec(Node extdec)
 
         sym->offset = offset;
         offset += sym->type->type_size;
-        vardec = vardec->sibling;
-    }
+        extdec->sema = vardec->sema;
 }
-
 
 static void extdef_is_spec_extdec(Node extdef)
 {
@@ -666,6 +663,7 @@ static ast_visitor sema_visitors[] = {
     [EXTDEF_is_SPEC]             = extdef_is_spec,
     [EXTDEF_is_SPEC_FUNC_COMPST] = extdef_is_spec_func_compst,
     [EXTDEC_is_VARDEC]           = extdec_is_vardec,
+    [EXTDEC_is_VARDEC_INITIALIZATION] = extdec_is_vardec,
     [SPEC_is_TYPE]               = spec_is_type,
     [SPEC_is_STRUCT]             = spec_is_struct,
     [STRUCT_is_ID]               = struct_is_id,

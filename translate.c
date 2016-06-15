@@ -872,7 +872,10 @@ static void translate_extdef_spec_extdec(Node extdef)
 {
     Node spec = extdef->child;
     Node extdec = spec->sibling;
-    translate_dispatcher(extdec);
+    while (extdec != NULL) {
+        translate_dispatcher(extdec);
+        extdec = extdec->sibling;
+    }
 }
 
 static void translate_extdef_spec(Node extdef)
@@ -885,27 +888,25 @@ static void translate_extdef_spec(Node extdef)
 static void translate_extdec_vardec(Node extdec)
 {
     Node vardec = extdec->child;
-    Node iterator;
-    while(vardec != NULL){
-        iterator = vardec->child;
-        // TODO: 暂时不支持全局数组，除了 int 和 char 之外的类型
-        assert(iterator->tag == TERM_ID); 
-        Symbol *sym = (Symbol *)query(iterator->val.s);
-        assert(typecmp(sym->type, BASIC_INT) || typecmp(sym->type, BASIC_CHAR));
-        sym->address = new_operand(OPE_GLOBAL);
-        sym->address->name = iterator->val.s;
-        sym->address->base_type = sym->type;
-        // 将全局变量初始化，默认为 0
-        Operand const_ope;
-        const_ope = new_operand(OPE_INTEGER);
+    Node iterator = vardec->child;
+    // TODO: 暂时不支持全局数组，除了 int 之外的类型
+    Symbol *sym = (Symbol *)query(iterator->val.s);
+    assert(typecmp(sym->type, BASIC_INT));
+    sym->address = new_operand(OPE_GLOBAL);
+    sym->address->name = iterator->val.s;
+    sym->address->base_type = sym->type;
+    // 将全局变量初始化，默认为 0
+    Operand const_ope;
+    const_ope = new_operand(OPE_INTEGER);
+    if (vardec->sibling != NULL){
+        const_ope->integer = vardec->sibling->val.i;
+        LOG("全局变量 %s 被初始化为 %d", sym->address->name, const_ope->integer);
+    } else {
         const_ope->integer = 0;
-
-        new_instr(IR_GLOBAL, sym->address, const_ope, NULL);
-
-        vardec = vardec->sibling;
+        LOG("全局变量 %s 被默认初始化", sym->address->name);
     }
+    new_instr(IR_GLOBAL, sym->address, const_ope, NULL);
 }
-
 
 static void translate_extdef_func(Node extdef)
 {
@@ -1028,6 +1029,7 @@ static trans_visitor trans_visitors[] =
     [EXTDEF_is_SPEC]               = translate_extdef_spec,
     [EXTDEF_is_SPEC_FUNC_COMPST]   = translate_extdef_func,
     [EXTDEC_is_VARDEC]             = translate_extdec_vardec,
+    [EXTDEC_is_VARDEC_INITIALIZATION] = translate_extdec_vardec,
     [FUNC_is_ID_VAR]               = translate_func_head,
     [COMPST_is_DEF_STMT]           = translate_compst,
     [DEC_is_VARDEC]                = translate_dec_is_vardec,

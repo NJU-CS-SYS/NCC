@@ -10,6 +10,7 @@ enum ProductionTag {
     EXTDEF_is_SPEC,
     EXTDEF_is_SPEC_FUNC_COMPST,
     EXTDEC_is_VARDEC,
+    EXTDEC_is_VARDEC_INITIALIZATION, 
     SPEC_is_TYPE,
     SPEC_is_STRUCT,
     STRUCT_is_ID_DEF,

@@ -54,7 +54,7 @@ const char *reg_to_s(int index)
         // global variable name output.
         index = index - GLOBAL_BASE;
         assert(index < global_count);
-        return global_var_name[index];
+        return global_var_buf[index].rs->name;
     }
 }
 

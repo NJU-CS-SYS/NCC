@@ -14,7 +14,6 @@ extern FILE *asm_file;  // Stream to store assembly code.
 static Block blk_buf[MAX_LINE];
 static int nr_blk;
 IR global_var_buf[16];
-char global_var_name[16][32];
 int global_count;
 
 // 指令缓冲区
@@ -459,12 +458,9 @@ void preprocess_ir()
 
     // 移动所有的全局变量定义
     global_count = 0;
-    memset(global_var_name, 0, 16*32*sizeof(char));
     for (int i = 0; i < nr_instr; i++){
         if(pIR->type == IR_GLOBAL){
             memcpy(&global_var_buf[global_count], pIR, sizeof(*pIR));
-            memcpy(&global_var_name[global_count][1], pIR->rs->name, strlen(pIR->rs->name));
-            global_var_name[global_count][0] = '$';
             global_count++;
             pIR->type = IR_NOP;
         }

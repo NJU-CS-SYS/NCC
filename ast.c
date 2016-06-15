@@ -15,6 +15,7 @@ static int body_size[] = {
     [EXTDEF_is_SPEC] = 1,
     [EXTDEF_is_SPEC_FUNC_COMPST] = 3,
     [EXTDEC_is_VARDEC] = 1,
+    [EXTDEC_is_VARDEC_INITIALIZATION] = 2,
     [SPEC_is_TYPE] = 1,
     [SPEC_is_STRUCT] = 1,
     [STRUCT_is_ID_DEF] = 2,
