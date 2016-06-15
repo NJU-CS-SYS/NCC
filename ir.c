@@ -294,6 +294,7 @@ void print_instr(FILE *file)
             push_all();
         }
         else {
+            push_all(); // But we need to save global variables.
             gen_asm(instr_buffer + j);  // Local variables do not need to store when return
         }
 

@@ -88,7 +88,12 @@ int get_reg(int start, int end)  // [start, end]
             if (vic->type == OPE_TEMP || vic->type == OPE_ADDR) {
                 WARN("Back up temporary variable");
             }
-            emit_asm(movl, "%s, %d(%%esp)  # Back up victim", reg_s[victim], sp_offset - ope_in_reg[victim]->address);
+            if (vic->type == OPE_GLOBAL){
+                // Back up global variable
+                emit_asm(movl, "%s, %s         # Back up victim", reg_s[victim], print_operand(vic));
+            } else {
+                emit_asm(movl, "%s, %d(%%esp)  # Back up victim", reg_s[victim], sp_offset - ope_in_reg[victim]->address);
+            }
         }
         ope_in_reg[victim] = NULL;
         return victim;
@@ -137,6 +142,7 @@ int allocate(Operand ope)
     // Select a suitable register group
     switch (ope->type) {
     case OPE_VAR:
+    case OPE_GLOBAL:
     case OPE_BOOL:
         reg = get_reg(EAX, EDX);
         break;
@@ -146,20 +152,13 @@ int allocate(Operand ope)
     case OPE_CHAR:
         reg = get_reg(EAX, EDX);
         break;
-    case OPE_GLOBAL:
-        reg = get_global(ope);
-        break;
     default:
         PANIC("Unexpected operand type when allocating registers");
         reg = get_reg(EAX, EDX);
     }
 
-    if(reg < GLOBAL_BASE){
-        ope_in_reg[reg] = ope;
-        LOG("Allocate %s to register %s", print_operand(ope), reg_to_s(reg));
-    } else {
-        LOG("Allocate global variable %s", print_operand(ope));
-    }
+    ope_in_reg[reg] = ope;
+    LOG("Allocate %s to register %s", print_operand(ope), reg_to_s(reg));
 
     return reg;
 }
@@ -174,11 +173,12 @@ int ensure(Operand ope)
 {
     TEST(ope, "Operand is null");
 
+/*
     if(ope->type == OPE_GLOBAL){
         LOG("Find global variable %s", print_operand(ope));
         return get_global(ope);
     }
-
+*/
     for (int i = 0; i < NR_REG; i++) {
         if (ope_in_reg[i] && cmp_operand(ope, ope_in_reg[i])) {
             LOG("Find %s at %s", print_operand(ope), reg_to_s(i));
@@ -190,6 +190,11 @@ int ensure(Operand ope)
 
     if (is_const(ope)) {
         emit_asm(movl, "$%d, %s", ope->integer, reg_s[result]); // Jump '#' required by ir
+    }
+    else if(ope->type == OPE_GLOBAL){
+        // ensure global_var
+        emit_asm(movl, "%s, %s  # Move global variable %s into register %s",
+                print_operand(ope), reg_s[result], print_operand(ope), reg_to_s(result));
     }
     else {
         emit_asm(movl, "%d(%%esp), %s  # sp_offset %d addr %d",
@@ -210,7 +215,12 @@ void push_all()
 {
     for (int i = 0; i < NR_REG; i++) {
         Operand ope = ope_in_reg[i];
-        if (ope != NULL && dirty[i] && (ope->next_use != MAX_LINE || ope->liveness)) {
+        if (ope != NULL && dirty[i] && (ope->type == OPE_GLOBAL)){
+            // Backup global variables.
+            emit_asm(movl, "%s, %s         # Push %s", 
+                    reg_s[i], print_operand(ope), print_operand(ope));
+        }
+        else if (ope != NULL && dirty[i] && (ope->next_use != MAX_LINE || ope->liveness)) {
             // Use next_use to avoid store dead temporary variables.
             // Use liveness to promise that user-defined variables are backed up.
             emit_asm(movl, "%s, %d(%%esp)  # push %s", reg_s[i], sp_offset - ope->address, print_operand(ope));
