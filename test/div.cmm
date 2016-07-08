@@ -1,9 +1,0 @@
-int div(int a, int b){
-    return a/b;
-}
-
-int main(){
-    int j = 12321;
-    int i = 111;
-    return div(j, i);
-}

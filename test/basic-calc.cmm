@@ -1,0 +1,27 @@
+int main(){
+    int a = 2, b = 3;
+    int result;
+
+    // Basic add.
+    result = a + b;
+    if(result != 5) return 1;
+
+    // Basic substract.
+    result = b - a;
+    if(result != 1) return 2;
+
+    //Basic multiply.
+    result = a * b;
+    if(result != 6) return 3;
+
+    // Basic divide.
+    result = a / b;
+    if(result != 0) return 4;
+
+    // Add with overflow.
+    result = 0xffffffff + 3;
+    if(result != 2) return 5;
+
+    // Pass
+    return 0;
+}

@@ -124,7 +124,7 @@ static enum yytokentype num(int radix)
     yylval.nd = new_node();
     yylval.nd->lineno = yylineno;
     yylval.nd->tag = TERM_INT;
-    yylval.nd->val.i = strtol(yytext, NULL, radix);
+    yylval.nd->val.i = strtoul(yytext, NULL, radix);
     return INT;
 }
 

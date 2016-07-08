@@ -136,10 +136,17 @@ static void translate_exp_is_id(Node exp)
     }
 
     if (sym->type->class == CMM_STRUCT) {
-        exp->dst = new_operand(OPE_ADDR);
-        exp->base = exp->dst;
-        exp->dst->base_type = sym->type;
-        new_instr(IR_ADDR, sym->address, NULL, exp->dst);
+        if(sym->address->type == OPE_REF){
+            // The struct is defined in this function.
+            exp->dst = new_operand(OPE_ADDR);
+            exp->base = exp->dst;
+            exp->dst->base_type = sym->type;
+            new_instr(IR_ADDR, sym->address, NULL, exp->dst);
+        } else {
+            // The struct is a parameter of the function.
+            exp->dst = sym->address;
+            exp->base = exp->dst;
+        }
     }
     else if (sym->type->class == CMM_ARRAY) {
         exp->dst = new_operand(OPE_INTEGER);
@@ -945,7 +952,7 @@ static void translate_func_head(Node func)
         }
         // TODO eliminate coercion
         Symbol *sym = (Symbol *)query(id->val.s);
-        if (sym->type->class == CMM_ARRAY) {
+        if (sym->type->class == CMM_ARRAY || sym->type->class == CMM_STRUCT) {
             sym->address = new_operand(OPE_ADDR);
             sym->address->base_type = sym->type;
         }

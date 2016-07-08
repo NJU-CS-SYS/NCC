@@ -9,5 +9,8 @@ int add(int a, int b){
 int main(){
     i = 15;
     j = add(i, j);
-    return j;
+    if(j == 5) 
+        return 0;
+    else 
+        return j;
 }

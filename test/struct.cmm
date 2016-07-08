@@ -19,10 +19,19 @@ int xxx(struct Bar x)
 int main()
 {
     struct Bar a[5];
+    int result;
     a[2].m.a = 233;
     a[2].m.b = 12;
-    write(a[2].m.a);
-    write(xxx(a[2]));
-    write(a[2].m.a);
+    //write(a[2].m.a);
+    //write(xxx(a[2]));
+    //write(a[2].m.a);
+    if(a[2].m.a != 233)
+        return 1;
+    result = xxx(a[2]);
+    if(result != 12){
+        return 2;
+    }
+    if(a[2].m.a != 23)
+        return 3;
     return 0;
 }

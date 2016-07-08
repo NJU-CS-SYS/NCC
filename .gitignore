@@ -17,6 +17,7 @@
 *.py
 *.d
 *.out
+*.debug
 !predefine*.S
 cmm
 ncc

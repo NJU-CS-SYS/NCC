@@ -11,7 +11,7 @@ struct Node_ {
     enum ProductionTag tag;
     int lineno;
     union {
-        int i;
+        unsigned int i;
         float f;
         const char *s;
         void *p;

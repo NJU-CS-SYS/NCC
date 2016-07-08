@@ -3,6 +3,7 @@
 #include "basic-block.h"
 #include "asm.h"
 #include "register.h"
+#include "predefine.h"
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
@@ -226,22 +227,14 @@ void print_instr(FILE *file)
     ////////////////////////////////////////////////////////
 
     // Predefined variables
-    FILE *predef = fopen("predefine-data.S", "r");
-    char linebuf[128];  // 128 is enough?
-    while (fgets(linebuf, 128, predef)) {
-        fputs(linebuf, asm_file);
-    }
-    fclose(predef);
+    predefined_data(asm_file);
     // 全局变量定义应该在数据段
     // 所有 IR_GLOBAL，在此段进行翻译
     for (int i = 0; i < global_count; i++){
         gen_asm(&global_var_buf[i]);
     }
     // Predefined functions.
-    predef = fopen("predefine-text.S", "r");
-    while (fgets(linebuf, 128, predef)) {
-        fputs(linebuf, asm_file);
-    }
+    predefined_text(asm_file);
 
     // Handle each basic block
 

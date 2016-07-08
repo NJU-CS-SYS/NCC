@@ -52,5 +52,8 @@ int main()
         count = count + flag;
     }
     //write(count);
-    return count;
+    if(count == 2)
+        return 0;
+    else
+        return count;
 }

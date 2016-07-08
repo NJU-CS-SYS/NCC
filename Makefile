@@ -42,6 +42,9 @@ $(YFC): $(YFILE)
 test: $(COMPILER)
 	./test.sh
 
+execute: $(COMPILER)
+	./test.sh execute
+
 gdb: $(COMPILER)
 	gdb $(COMPILER) $(GDBFLAGS)
 
@@ -50,3 +53,7 @@ clean:
 	rm -f $(OBJS) $(OBJS:.o=.d)
 	rm -f $(LFC) $(YFC) $(YFC:.c=.h) $(LFO) $(YFO)
 	rm -f *~
+	rm -f ./test/*.out
+	rm -f ./test/*.S
+	rm -f ./test/*.debug
+	rm -f ./test/*.ir

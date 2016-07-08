@@ -39,5 +39,8 @@ int main()
     b = a + b;
     c = a + b;
     //write(c);
-    return c;
+    if(c == 16) 
+        return 0;
+    else 
+        return c;
 }
