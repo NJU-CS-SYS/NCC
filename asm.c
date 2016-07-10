@@ -82,9 +82,16 @@ void gen_asm_add(IR *ir)
         int second = ensure(ir->rt);
         int dst = allocate(ir->rd);
         set_dirty(dst);
-        if(first != dst)
-            emit_asm(movl, "%s, %s", reg_to_s(first), reg_to_s(dst));
-        emit_asm(addl, "%s, %s", reg_to_s(second), reg_to_s(dst));
+        if(dst == first){
+            emit_asm(addl, "%s, %s", reg_to_s(second), reg_to_s(dst));
+        }
+        else if(dst == second){
+            emit_asm(addl, "%s, %s", reg_to_s(first), reg_to_s(dst));
+        } 
+        else {
+            emit_asm(movl, "%s, %s", reg_to_s(second), reg_to_s(dst));
+            emit_asm(addl, "%s, %s", reg_to_s(first), reg_to_s(dst));
+        }
     }
 }
 
@@ -92,7 +99,6 @@ void gen_asm_add(IR *ir)
 void gen_asm_sub(IR *ir)
 {
     // Note, sub cannot exchange!
-
     if (ir->rt->type == OPE_INTEGER) {
         gen_asm_addi(ir->rd, ir->rs, -ir->rt->integer);
     }
@@ -101,9 +107,19 @@ void gen_asm_sub(IR *ir)
         int second = ensure(ir->rt);
         int dst = allocate(ir->rd);
         set_dirty(dst);
-        if(first != dst)
+        if(dst == first){
+            emit_asm(subl, "%s, %s", reg_to_s(second), reg_to_s(dst));
+        }
+        else if(dst == second){
+            emit_asm(pushl, "%s", reg_to_s(first));
+            emit_asm(subl, "%s, %s", reg_to_s(second), reg_to_s(first));
             emit_asm(movl, "%s, %s", reg_to_s(first), reg_to_s(dst));
-        emit_asm(subl, "%s, %s", reg_to_s(second), reg_to_s(dst));
+            emit_asm(popl, "%s", reg_to_s(first));
+        } 
+        else {
+            emit_asm(movl, "%s, %s", reg_to_s(first), reg_to_s(dst));
+            emit_asm(subl, "%s, %s", reg_to_s(second), reg_to_s(dst));
+        }
     }
 }
 
@@ -113,15 +129,31 @@ void gen_asm_mul(IR *ir)
     int y = ensure(ir->rs);
     int z = ensure(ir->rt);
     int x = allocate(ir->rd);
+    // Prepare for mul
+    emit_asm(pushl, "%%eax");
+    emit_asm(pushl, "%%ebx");
+    emit_asm(pushl, "%%edx");
+    if(y == EBX && z == EAX){
+        emit_asm(movl, "%%eax, %%edx");
+        emit_asm(movl, "%%ebx, %%eax");
+        emit_asm(movl, "%%edx, %%ebx");
+    } 
+    else if(z != EAX){
+        emit_asm(movl, "%s, %%EAX", reg_to_s(y));
+        emit_asm(movl, "%s, %%EBX", reg_to_s(z));
+    } else {
+        emit_asm(movl, "%s, %%EBX", reg_to_s(z));
+        emit_asm(movl, "%s, %%EAX", reg_to_s(y));
+    }
+    // EAX * EBX -> EDX:EAX
     set_dirty(x);
-    if(x != EAX){
-        emit_asm(pushl, "%%eax");
-    }
-    if(y != EAX){
-        emit_asm(movl, "%s, %%eax", reg_to_s(y));
-    }
-    emit_asm(mull, "%s", reg_to_s(z));
-    if(x != EAX){
+    emit_asm(mull, "%%ebx");
+    // Restore registers.
+    emit_asm(popl, "%%edx");
+    emit_asm(popl, "%%ebx");
+    if(x == EAX){
+        emit_asm(addl, "$4, %%esp");
+    } else {
         emit_asm(movl, "%%eax, %s", reg_to_s(x));
         emit_asm(popl, "%%eax");
     }
@@ -133,21 +165,35 @@ void gen_asm_div(IR *ir)
     int y = ensure(ir->rs);
     int z = ensure(ir->rt);
     int x = allocate(ir->rd);
+    // Prepare for div
+    emit_asm(pushl, "%%eax");
+    emit_asm(pushl, "%%ebx");
     emit_asm(pushl, "%%edx");
+    if(y == EBX && z == EAX){
+        emit_asm(movl, "%%eax, %%edx");
+        emit_asm(movl, "%%ebx, %%eax");
+        emit_asm(movl, "%%edx, %%ebx");
+    } 
+    else if(z != EAX){
+        emit_asm(movl, "%s, %%EAX", reg_to_s(y));
+        emit_asm(movl, "%s, %%EBX", reg_to_s(z));
+    } else {
+        emit_asm(movl, "%s, %%EBX", reg_to_s(z));
+        emit_asm(movl, "%s, %%EAX", reg_to_s(y));
+    }
     emit_asm(movl, "$0, %%edx");
-    if(x != EAX){
-        emit_asm(pushl, "%%eax");
-    }
-    if(y != EAX){
-        emit_asm(movl, "%s, %%eax", reg_to_s(y));
-    }
+    // EDX:EAX / EBX -> EAX
     set_dirty(x);
-    emit_asm(div, "%s", reg_to_s(z));
-    if(x != EAX){
+    emit_asm(div, "%%ebx");
+    // Restore registers.
+    emit_asm(popl, "%%edx");
+    emit_asm(popl, "%%ebx");
+    if(x == EAX){
+        emit_asm(addl, "$4, %%esp");
+    } else {
         emit_asm(movl, "%%eax, %s", reg_to_s(x));
         emit_asm(popl, "%%eax");
     }
-    emit_asm(popl, "%%edx");
 }
 
 

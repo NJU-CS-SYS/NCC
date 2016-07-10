@@ -22,6 +22,15 @@ int main(){
     result = 0xffffffff + 3;
     if(result != 2) return 5;
 
+    // Substrat with overflow.
+    result = a - b;
+    if(result != 0xffffffff) return 6;
+
+    // Divide
+    a = 14;
+    result = a - a / b * b;
+    if(result != 2) return result;
+
     // Pass
     return 0;
 }
