@@ -88,10 +88,11 @@ int get_reg(int start, int end)  // [start, end]
             if (vic->type == OPE_TEMP || vic->type == OPE_ADDR) {
                 WARN("Back up temporary variable");
             }
-            if (vic->type == OPE_GLOBAL){
+            else if (vic->type == OPE_GLOBAL){
                 // Back up global variable
                 emit_asm(movl, "%s, %s         # Back up victim", reg_s[victim], print_operand(vic));
-            } else {
+            } 
+            else {
                 emit_asm(movl, "%s, %d(%%esp)  # Back up victim", reg_s[victim], sp_offset - ope_in_reg[victim]->address);
             }
         }

@@ -561,13 +561,13 @@ void optimize_liveness(int start, int end)
             }
         }
 
-        if (ir->rd && is_tmp(ir->rd)) {
+        if (ir->rd) {
             ir->rd->liveness = DISALIVE;
             ir->rd->next_use = NO_USE;
         }
 
         for (int k = 0; k < NR_OPE; k++) {
-            if (k != RD_IDX && ir->operand[k] && is_tmp(ir->operand[k])) {
+            if (k != RD_IDX && ir->operand[k]) {
                 ir->operand[k]->liveness = ALIVE;
                 ir->operand[k]->next_use = i;
             }
