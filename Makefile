@@ -45,6 +45,9 @@ test: $(COMPILER)
 execute: $(COMPILER)
 	./test.sh execute
 
+nemu: $(COMPILER)
+	./test.sh nemu
+
 gdb: $(COMPILER)
 	gdb $(COMPILER) $(GDBFLAGS)
 

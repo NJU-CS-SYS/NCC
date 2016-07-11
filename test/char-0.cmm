@@ -8,10 +8,10 @@ int main(){
     c[4] = 'o';
     c[5] = ' ';
     while( i != 5 ){
-        //writec(c[i]);
+        writec(c[i]);
         i = i+1;
     }
-    //writec(c[5]+1);
-    //write(i);
+    writec(c[5]+1);
+    write(i);
     return 0;
 }

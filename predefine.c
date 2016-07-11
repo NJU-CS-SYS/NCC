@@ -30,7 +30,6 @@ void predefined_text(FILE *fp){
     fprintf(fp, "  movl $67, %%eax\n");
     fprintf(fp, "  movl $_ret, %%ecx\n");
     fprintf(fp, "  int $0x80\n");
-    fprintf(fp, "  syscall\n");
     fprintf(fp, "  ret\n");
     fprintf(fp, ".globl writec\n");
     fprintf(fp, "writec:\n");
@@ -38,7 +37,6 @@ void predefined_text(FILE *fp){
     fprintf(fp, "  movl $68, %%eax\n");
     fprintf(fp, "  movl $_ret, %%ecx\n");
     fprintf(fp, "  int $0x80\n");
-    fprintf(fp, "  syscall\n");
     fprintf(fp, "  ret\n");
     fprintf(fp, ".globl main\n");
 }

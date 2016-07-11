@@ -33,9 +33,11 @@ for file in $TESTCASE; do
     NAME=$(echo "$file"|cut -d '/' -f 2|head -c -5)
     printf "======== Testing $NAME ========\n"
     ASM=${NAME}.S
+    OBJ=${NAME}.o
     EXE=${NAME}.out
     IR=${NAME}.ir
     DEB=${NAME}.debug
+    DUMP=${NAME}.dump
 
     ../ncc $file $ASM 2> $DEB
     if [ $? -ne 0 ]; then
@@ -46,7 +48,14 @@ for file in $TESTCASE; do
     fi
 
     #spim -file $ASM 2> /dev/null # Only check the validation of the asm file
-    gcc $ASM -o $EXE
+    if [ $state = "nemu" ]; then
+        gcc -c $ASM 
+        ld -melf_i386 -e main -Ttext-segment=0x209000 -o $EXE $OBJ
+        objdump -d $EXE > $DUMP
+    else
+        gcc $ASM -o $EXE
+    fi
+
     if [ $? -ne 0 ]; then
         printf "${LIGHT_RED}GCC failed.${NO_COLOR}\n"
         continue
