@@ -145,11 +145,11 @@ void gen_asm_mul(IR *ir)
         emit_asm(xchgl, "%%eax, %%ebx");
     }
     else if(z != EAX){
-        emit_asm(movl, "%s, %%EAX", reg_to_s(y));
-        emit_asm(movl, "%s, %%EBX", reg_to_s(z));
+        emit_asm(movl, "%s, %%eax", reg_to_s(y));
+        emit_asm(movl, "%s, %%ebx", reg_to_s(z));
     } else {
-        emit_asm(movl, "%s, %%EBX", reg_to_s(z));
-        emit_asm(movl, "%s, %%EAX", reg_to_s(y));
+        emit_asm(movl, "%s, %%ebx", reg_to_s(z));
+        emit_asm(movl, "%s, %%eax", reg_to_s(y));
     }
     // EAX * EBX -> EDX:EAX
     emit_asm(mull, "%%ebx");
