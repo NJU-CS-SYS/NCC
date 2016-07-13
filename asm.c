@@ -377,23 +377,27 @@ void gen_asm_addr(IR *ir)
 void gen_asm_write(IR *ir)
 {
     int x = ensure(ir->rs);
+    emit_asm(pushl, "%%eax");
     emit_asm(movl, "%s, %%eax", reg_to_s(x));
     emit_asm(pushl, "%%ebx");
     emit_asm(pushl, "%%ecx");
     emit_asm(call, "write");
     emit_asm(popl, "%%ecx");
     emit_asm(popl, "%%ebx");
+    emit_asm(popl, "%%eax");
 }
 
 void gen_asm_writec(IR *ir)
 {
     int x = ensure(ir->rs);
+    emit_asm(pushl, "%%eax");
     emit_asm(movl, "%s, %%eax", reg_to_s(x));
     emit_asm(pushl, "%%ebx");
     emit_asm(pushl, "%%ecx");
     emit_asm(call, "writec");
     emit_asm(popl, "%%ecx");
     emit_asm(popl, "%%ebx");
+    emit_asm(popl, "%%eax");
 }
 
 
@@ -401,8 +405,49 @@ void gen_asm_read(IR *ir)
 {
     int x = allocate(ir->rd);
     set_dirty(x);
+    emit_asm(pushl, "%%eax");
+    emit_asm(pushl, "%%ebx");
+    emit_asm(pushl, "%%ecx");
+    emit_asm(call, "read");
+    emit_asm(popl, "%%ecx");
+    emit_asm(popl, "%%ebx");
+    if( x != EAX){
+        emit_asm(movl, "%%eax, %s", reg_to_s(x));
+        emit_asm(popl, "%%eax");
+    } else {
+        emit_asm(addl, "$-4, %%esp");
+    }
+}
+
+
+void gen_asm_read(IR *ir)
+{
+    int x = allocate(ir->rd);
+    set_dirty(x);
+    emit_asm(pushl, "%%eax");
+    emit_asm(pushl, "%%ebx");
+    emit_asm(pushl, "%%ecx");
     emit_asm(call, "read");
     emit_asm(movl, "%%eax, %s", reg_to_s(x));
+}
+
+void gen_asm_global(IR *ir)
+{
+    fprintf(asm_file, ".globl %s\n%s:\n", ir->rs->name, ir->rs->name);
+    fprintf(asm_file, "  .long %d\n", ir->rt->integer);
+}
+
+
+typedef void(*trans_handler)(IR *);
+
+trans_handler handler[NR_IR_TYPE] = {
+    [IR_GLOBAL]  = gen_asm_global,
+    [IR_DEC]     = gen_asm_dec,
+    [IR_FUNC]    = gen_asm_func,
+    [IR_ASSIGN]  = gen_asm_assign,
+    [IR_ADD]     = gen_asm_add,
+    [IR_SUB]     = gen_asm_sub,
+    [IR_MUL]     = gen_asm_mul,
 }
 
 void gen_asm_global(IR *ir)
