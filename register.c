@@ -88,10 +88,11 @@ int get_reg(int start, int end)  // [start, end]
             if (vic->type == OPE_TEMP || vic->type == OPE_ADDR) {
                 WARN("Back up temporary variable");
             }
-            if (vic->type == OPE_GLOBAL){
+            else if (vic->type == OPE_GLOBAL){
                 // Back up global variable
                 emit_asm(movl, "%s, %s         # Back up victim", reg_s[victim], print_operand(vic));
-            } else {
+            } 
+            else {
                 emit_asm(movl, "%s, %d(%%esp)  # Back up victim", reg_s[victim], sp_offset - ope_in_reg[victim]->address);
             }
         }
@@ -220,7 +221,7 @@ void push_all()
             emit_asm(movl, "%s, %s         # Push %s", 
                     reg_s[i], print_operand(ope), print_operand(ope));
         }
-        else if (ope != NULL && dirty[i] && (ope->next_use != MAX_LINE || ope->liveness)) {
+        else if (ope != NULL && dirty[i] && !is_const(ope) &&(ope->next_use != MAX_LINE || ope->liveness)) {
             // Use next_use to avoid store dead temporary variables.
             // Use liveness to promise that user-defined variables are backed up.
             emit_asm(movl, "%s, %d(%%esp)  # push %s", reg_s[i], sp_offset - ope->address, print_operand(ope));
