@@ -50,7 +50,7 @@ for file in $TESTCASE; do
     #spim -file $ASM 2> /dev/null # Only check the validation of the asm file
     if [ $state = "nemu" ]; then
         gcc -c $ASM 
-        ld -melf_i386 -e main -Ttext-segment=0x209000 -o $EXE $OBJ
+        ld -melf_i386 -e main -Ttext-segment=0x202000 -o $EXE $OBJ
         objdump -d $EXE > $DUMP
     else
         gcc $ASM -o $EXE
