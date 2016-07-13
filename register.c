@@ -85,10 +85,10 @@ int get_reg(int start, int end)  // [start, end]
         TEST(start <= victim && victim <= end && ope_in_reg[victim], "Victim should be updated");
         Operand vic = ope_in_reg[victim];
         if (vic->next_use != MAX_LINE || vic->liveness) {
-            if (vic->type == OPE_TEMP) {
+            /*if (vic->type == OPE_TEMP) {
                 WARN("Back up temporary variable");
             }
-            else if (vic->type == OPE_GLOBAL){
+            else*/ if (vic->type == OPE_GLOBAL){
                 // Back up global variable
                 emit_asm(movl, "%s, %s         # Back up victim", reg_s[victim], print_operand(vic));
             } 
