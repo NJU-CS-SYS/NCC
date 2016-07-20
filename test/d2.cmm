@@ -60,7 +60,7 @@ int main()
         return 3;
     }
     //write(count);
-    if(count == 7)
+    if(count == 2)
         return 0;
     else
         return 1;
