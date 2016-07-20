@@ -45,6 +45,7 @@ struct Operand_ {
     // 代码优化相关
     int liveness;
     int next_use;
+    bool is_using;      // The operand is using cannot be replaced.
     pDagNode dep;       // 依赖结点
 };
 

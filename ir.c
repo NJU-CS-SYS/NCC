@@ -546,6 +546,7 @@ void optimize_liveness(int start, int end)
             }
 
             ope->next_use = MAX_LINE;
+            ope->is_using = false;
         }
     }
 

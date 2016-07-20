@@ -85,7 +85,9 @@ void gen_asm_add(IR *ir)
     }
     else {
         int first = ensure(ir->rs);
+        ir->rs->is_using = true;
         int second = ensure(ir->rt);
+        ir->rs->is_using = false;
         int dst = allocate(ir->rd);
         set_dirty(dst);
         if(dst == first){
@@ -110,7 +112,9 @@ void gen_asm_sub(IR *ir)
     }
     else {
         int first = ensure(ir->rs);
+        ir->rs->is_using = true;
         int second = ensure(ir->rt);
+        ir->rs->is_using = false;
         int dst = allocate(ir->rd);
         set_dirty(dst);
         if(dst == first){
@@ -134,7 +138,9 @@ void gen_asm_mul(IR *ir)
 {
     // Prepare operators
     int y = ensure(ir->rs);
+    ir->rs->is_using = true;
     int z = ensure(ir->rt);
+    ir->rs->is_using = false;
     int x = allocate(ir->rd);
     set_dirty(x);
     // Prepare for mul
@@ -168,7 +174,9 @@ void gen_asm_mul(IR *ir)
 void gen_asm_div(IR *ir)
 {
     int y = ensure(ir->rs);
+    ir->rs->is_using = true;
     int z = ensure(ir->rt);
+    ir->rs->is_using = false;
     int x = allocate(ir->rd);
     // Prepare for div
     emit_asm(pushl, "%%eax");
@@ -344,7 +352,9 @@ void gen_asm_br(IR *ir)
         }
     } else {
         int x = ensure(ir->rs);
+        ir->rs->is_using = true;
         int y = ensure(ir->rt);
+        ir->rs->is_using = false;
         emit_asm(cmpl, "%s, %s", reg_to_s(x), reg_to_s(y));
         switch (ir->type) {
             case IR_BEQ: emit_asm(je, "%s", print_operand(ir->rd)); break;

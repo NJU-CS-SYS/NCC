@@ -45,7 +45,6 @@ void set_dirty(int index)
     }
 }
 
-
 const char *reg_to_s(int index)
 {
     if(index < GLOBAL_BASE){
@@ -72,7 +71,7 @@ int get_reg(int start, int end)  // [start, end]
         if (ope == NULL) {  // An empty register
             break;
         }
-        else if (victim_next_use < ope->next_use) {
+        else if (!ope->is_using && victim_next_use < ope->next_use) {
             victim = i;
             victim_next_use = ope->next_use;
         }

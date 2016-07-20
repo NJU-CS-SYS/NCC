@@ -385,10 +385,11 @@ static void translate_unary_operation(Node exp)
 {
     Node rexp = exp->child;
     rexp->dst = new_operand(OPE_TEMP);
+    translate_dispatcher(rexp);
 
     // 常量计算
     Operand const_ope = new_operand(OPE_NOT_USED);
-    if (rexp->dst->type == OPE_INTEGER || rexp->dst->type == OPE_CHAR) {
+    if (rexp->dst->type == OPE_INTEGER) {
         const_ope->type = OPE_INTEGER;
         const_ope->integer = -rexp->dst->integer;
         free_ope(&exp->dst);
