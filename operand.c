@@ -117,7 +117,7 @@ const char *print_operand(Operand ope)
                 sprintf(str, "#%d", ope->integer);
                 break;
             case OPE_CHAR:
-                sprintf(str, "'%c'", ope->integer);
+                sprintf(str, "%d", ope->integer);
                 break;
             case OPE_REFADDR:
                 sprintf(str, "&r%d", ope->index);
